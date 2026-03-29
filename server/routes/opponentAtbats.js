@@ -43,10 +43,10 @@ router.post('/', async (req, res, next) => {
     }
 
     const { batterOrder, batterName, inning, result, rbi, run, pitcherId, note } = req.body;
-    if (!batterOrder || !batterName || !inning || !result || !pitcherId) {
+    if (!batterOrder || !batterName || !inning || !result) {
       return res.status(400).json({
         success: false,
-        error: { code: 'INVALID_REQUEST', message: 'batterOrder, batterName, inning, result, pitcherId 필드가 필요합니다' },
+        error: { code: 'INVALID_REQUEST', message: 'batterOrder, batterName, inning, result 필드가 필요합니다' },
       });
     }
     if (!VALID_RESULTS.includes(result)) {

@@ -775,10 +775,9 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
     const nextOrder = (opponentAtBats.filter((ab) => ab.inning === inning).length) + 1;
     const newAtBat = {
       inning,
-      batterId: selectedBatter.id,
       batterName: selectedBatter.name,
       result,
-      order: nextOrder,
+      batterOrder: nextOrder,
       rbi: rbi || 0,
       run: run || 0,
       note: note || '',
@@ -786,7 +785,7 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
     };
     try {
       const res = await addOpponentAtBat(gameId, newAtBat);
-      onOpponentAtBatAdded(res.atBat || { ...newAtBat, id: Date.now().toString() });
+      onOpponentAtBatAdded(res.data || { ...newAtBat, id: Date.now().toString() });
     } catch (e) {
       console.error(e);
     }

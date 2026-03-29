@@ -17,7 +17,7 @@ import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
-import { getTeamStats, getPlayers, getPlayerStats, getPitchingStats } from '../api.js';
+import { getTeamStats, getAllPlayerStats, getPitchingStats } from '../api.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { formatAvg, formatOps } from '../utils/statsCalculator.js';
 
@@ -91,33 +91,27 @@ export default function StatsPage() {
   const [order, setOrder] = useState('desc');
 
   useEffect(() => {
-    Promise.all([getTeamStats(), getPlayers(), getPitchingStats()])
-      .then(async ([tsRes, playersRes, pitchingRes]) => {
+    Promise.all([getTeamStats(), getAllPlayerStats(), getPitchingStats()])
+      .then(([tsRes, allStatsRes, pitchingRes]) => {
         setTeamStats(tsRes.data || tsRes);
         setPitchingStats(pitchingRes.data || []);
-        const activePlayers = (playersRes.data || []).filter((p) => p.active !== false);
-        // Fetch stats for all players in parallel
-        const statsResults = await Promise.allSettled(
-          activePlayers.map((p) => getPlayerStats(p.id))
-        );
-        const merged = statsResults.map((result, idx) => {
-          const player = activePlayers[idx];
-          const stats = result.status === 'fulfilled' ? (result.value.data || result.value) : {};
-          return {
-            playerId: player.id,
-            name: player.name,
-            number: player.number,
-            position: player.position,
-            avg: stats.avg ?? 0,
-            obp: stats.obp ?? 0,
-            slg: stats.slg ?? 0,
-            ops: stats.ops ?? 0,
-            ab: stats.atBats ?? stats.ab ?? 0,
-            hits: stats.hits ?? stats.h ?? 0,
-            homeRuns: stats.homeRuns ?? stats.hr ?? 0,
-            plateAppearances: stats.plateAppearances ?? stats.pa ?? 0,
-          };
-        });
+        const allStats = allStatsRes.data || [];
+        const merged = allStats
+          .filter((s) => s.gamesPlayed > 0 || s.atBats > 0)
+          .map((s) => ({
+            playerId: s.playerId,
+            name: s.playerName,
+            number: s.number,
+            position: s.position,
+            avg: s.avg ?? 0,
+            obp: s.obp ?? 0,
+            slg: s.slg ?? 0,
+            ops: s.ops ?? 0,
+            ab: s.atBats ?? 0,
+            hits: s.hits ?? 0,
+            homeRuns: s.homeRuns ?? 0,
+            plateAppearances: s.plateAppearances ?? 0,
+          }));
         setPlayerStatsList(merged);
       })
       .catch((err) => setError(err.message))

@@ -29,6 +29,8 @@ export const updatePlayer = (id, data) => api.put(`/players/${id}`, data);
 export const deletePlayer = (id) => api.delete(`/players/${id}`);
 export const getPlayerStats = (id, params) =>
   api.get(`/stats/players/${id}`, { params });
+export const getAllPlayerStats = (params) =>
+  api.get('/stats/players', { params });
 
 // ─── Games ────────────────────────────────────────────────────────────────────
 

@@ -282,6 +282,7 @@ router.get('/pitching', async (req, res, next) => {
 
       for (const record of (game.pitching || [])) {
         const pid = record.pitcherId;
+        if (!pid) continue;
         if (!pitchingByPitcher[pid]) pitchingByPitcher[pid] = [];
         pitchingByPitcher[pid].push(record);
         pitcherIdsInGame.add(pid);
@@ -289,8 +290,10 @@ router.get('/pitching', async (req, res, next) => {
 
       for (const oab of (game.opponentAtBats || [])) {
         const pid = oab.pitcherId;
+        if (!pid) continue;
         if (!opponentAtBatsByPitcher[pid]) opponentAtBatsByPitcher[pid] = [];
         opponentAtBatsByPitcher[pid].push(oab);
+        pitcherIdsInGame.add(pid);
       }
 
       for (const pid of pitcherIdsInGame) {

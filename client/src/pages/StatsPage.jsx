@@ -22,7 +22,7 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { formatAvg, formatOps } from '../utils/statsCalculator.js';
 
 const COLUMNS = [
-  { id: 'name', label: '선수명', numeric: false, width: 80 },
+  { id: 'name', label: '선수명', numeric: false, width: 140 },
   { id: 'avg', label: '타율', numeric: true, format: formatAvg },
   { id: 'obp', label: '출루율', numeric: true, format: formatAvg },
   { id: 'slg', label: '장타율', numeric: true, format: formatAvg },
@@ -153,7 +153,7 @@ export default function StatsPage() {
                   <TableCell
                     key={col.id}
                     align={col.numeric ? 'center' : 'left'}
-                    sx={{ fontWeight: 700, fontSize: '0.75rem', py: 1.25, whiteSpace: 'nowrap' }}
+                    sx={{ fontWeight: 700, fontSize: '0.75rem', py: 1.25, whiteSpace: 'nowrap', width: col.width ?? 'auto' }}
                     sortDirection={orderBy === col.id ? order : false}
                   >
                     <TableSortLabel
@@ -182,7 +182,7 @@ export default function StatsPage() {
                   onClick={() => navigate(`/players/${row.playerId}`)}
                   sx={{ cursor: 'pointer', '&:last-child td': { borderBottom: 0 } }}
                 >
-                  <TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap', width: 140 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Typography variant="caption" sx={{ fontFamily: '"Roboto Mono", monospace', color: 'text.secondary', minWidth: 20 }}>
                         #{row.number}

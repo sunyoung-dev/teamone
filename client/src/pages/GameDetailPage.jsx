@@ -43,6 +43,7 @@ import {
   getOpponentLineup, updateOpponentLineup,
   getPitching, addPitching, deletePitching,
   getSubstitutions, addSubstitution, deleteSubstitution,
+  getLeagues,
 } from '../api.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ScoreChip from '../components/ScoreChip.jsx';
@@ -53,14 +54,19 @@ import { getEffectiveLineup, getEffectiveOpponentLineup } from '../utils/lineup.
 
 // ─── GameInfoCard ─────────────────────────────────────────────────────────────
 
-function GameInfoCard({ game, ourScore }) {
+function GameInfoCard({ game, ourScore, leagueName }) {
   const isFinal = game.status === 'final';
   const isInProgress = game.status === 'in_progress';
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>vs {game.opponent}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>vs {game.opponent}</Typography>
+            {leagueName && (
+              <Chip label={leagueName} size="small" variant="outlined" color="primary" sx={{ height: 20, fontSize: '0.65rem' }} />
+            )}
+          </Box>
           <ScoreChip result={game.result} size="medium" />
         </Box>
         <Box sx={{ display: 'flex', gap: 3, mb: 0.5 }}>
@@ -775,10 +781,9 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
     const nextOrder = (opponentAtBats.filter((ab) => ab.inning === inning).length) + 1;
     const newAtBat = {
       inning,
-      batterId: selectedBatter.id,
       batterName: selectedBatter.name,
       result,
-      order: nextOrder,
+      batterOrder: nextOrder,
       rbi: rbi || 0,
       run: run || 0,
       note: note || '',
@@ -786,7 +791,7 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
     };
     try {
       const res = await addOpponentAtBat(gameId, newAtBat);
-      onOpponentAtBatAdded(res.atBat || { ...newAtBat, id: Date.now().toString() });
+      onOpponentAtBatAdded(res.data || { ...newAtBat, id: Date.now().toString() });
     } catch (e) {
       console.error(e);
     }
@@ -822,8 +827,8 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
   // Batter inning results map
   const batterInningResults = {};
   inningAtBats.forEach((ab) => {
-    if (!batterInningResults[ab.batterId]) batterInningResults[ab.batterId] = [];
-    batterInningResults[ab.batterId].push(ab);
+    if (!batterInningResults[ab.batterOrder]) batterInningResults[ab.batterOrder] = [];
+    batterInningResults[ab.batterOrder].push(ab);
   });
 
   return (
@@ -958,7 +963,7 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                 {effectiveSortedLineup.map((batter) => {
-                  const results = batterInningResults[batter.id] || [];
+                  const results = batterInningResults[batter.order] || [];
                   const isSubIn = opponentSubsThisInning.has(batter.order);
                   return (
                     <Box
@@ -1342,6 +1347,7 @@ export default function GameDetailPage() {
   const [game, setGame] = useState(null);
   const [atBats, setAtBats] = useState([]);
   const [players, setPlayers] = useState([]);
+  const [leagues, setLeagues] = useState([]);
   const [opponentAtBats, setOpponentAtBats] = useState([]);
   const [pitchingRecords, setPitchingRecords] = useState([]);
   const [substitutions, setSubstitutions] = useState([]);
@@ -1355,13 +1361,15 @@ export default function GameDetailPage() {
     Promise.all([
       getGame(id),
       getPlayers(),
+      getLeagues().catch(() => ({ data: [] })),
       getOpponentAtBats(id).catch(() => ({ atBats: [] })),
       getPitching(id).catch(() => ({ records: [] })),
       getSubstitutions(id).catch(() => ({ data: [] })),
     ])
-      .then(([gameRes, playersRes, oppAtBatsRes, pitchingRes, subsRes]) => {
+      .then(([gameRes, playersRes, leaguesRes, oppAtBatsRes, pitchingRes, subsRes]) => {
         const g = gameRes.data || gameRes;
         setGame(g);
+        setLeagues(leaguesRes.data || []);
         setAtBats(g.atBats || []);
         setPlayers(playersRes.data || []);
         setOpponentAtBats(
@@ -1421,7 +1429,7 @@ export default function GameDetailPage() {
   return (
     <Box sx={{ pb: 10 }}>
       <Box sx={{ p: 2, pb: 0 }}>
-        <GameInfoCard game={game} ourScore={ourScore} />
+        <GameInfoCard game={game} ourScore={ourScore} leagueName={game.leagueId ? (leagues.find(l => l.id === game.leagueId)?.name) : null} />
         <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
           <Button size="small" startIcon={<EditIcon />} onClick={() => navigate(`/games/${id}/edit`)}>
             경기 정보 수정

@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const fs = require('fs').promises;
+const mongoose = require('mongoose');
 
 const playersRouter = require('./routes/players');
 const gamesRouter = require('./routes/games');
@@ -11,8 +10,8 @@ const leaguesRouter = require('./routes/leagues');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
-const PORT = 3001;
-const DATA_DIR = path.join(__dirname, 'data');
+const PORT = process.env.PORT || 3001;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/teamone';
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:5173' }));
@@ -38,44 +37,15 @@ app.use('/api/*', (req, res) => {
 // Global error handler
 app.use(errorHandler);
 
-// Ensure data directory and default files exist
-async function ensureDataFiles() {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-
-    const playersPath = path.join(DATA_DIR, 'players.json');
-    const gamesPath = path.join(DATA_DIR, 'games.json');
-    const leaguesPath = path.join(DATA_DIR, 'leagues.json');
-
-    try {
-      await fs.access(playersPath);
-    } catch {
-      await fs.writeFile(playersPath, JSON.stringify({ players: [] }, null, 2), 'utf-8');
-      console.log('Created default players.json');
-    }
-
-    try {
-      await fs.access(gamesPath);
-    } catch {
-      await fs.writeFile(gamesPath, JSON.stringify({ games: [] }, null, 2), 'utf-8');
-      console.log('Created default games.json');
-    }
-
-    try {
-      await fs.access(leaguesPath);
-    } catch {
-      await fs.writeFile(leaguesPath, JSON.stringify({ leagues: [] }, null, 2), 'utf-8');
-      console.log('Created default leagues.json');
-    }
-  } catch (err) {
-    console.error('Failed to initialize data directory:', err);
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log(`Connected to MongoDB: ${MONGODB_URI}`);
+    app.listen(PORT, () => {
+      console.log(`TeamOne WB server running on http://localhost:${PORT}`);
+      console.log(`CORS enabled for http://localhost:5173`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB:', err);
     process.exit(1);
-  }
-}
-
-ensureDataFiles().then(() => {
-  app.listen(PORT, () => {
-    console.log(`TeamOne WB server running on http://localhost:${PORT}`);
-    console.log(`CORS enabled for http://localhost:5173`);
   });
-});

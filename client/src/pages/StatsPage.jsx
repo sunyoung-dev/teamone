@@ -220,7 +220,7 @@ export default function StatsPage() {
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'background.default' }}>
                     {['선수명', '경기', 'IP', '피안타', '탈삼진', '볼넷', '실점', 'ERA'].map((label) => (
-                      <TableCell key={label} align={label === '선수명' ? 'left' : 'center'} sx={{ fontWeight: 700, fontSize: '0.75rem', py: 1.25, whiteSpace: 'nowrap' }}>
+                      <TableCell key={label} align={label === '선수명' ? 'left' : 'center'} sx={{ fontWeight: 700, fontSize: '0.75rem', py: 1.25, whiteSpace: 'nowrap', width: label === '선수명' ? 140 : 'auto' }}>
                         {label}
                       </TableCell>
                     ))}
@@ -229,7 +229,7 @@ export default function StatsPage() {
                 <TableBody>
                   {pitchingStats.filter((r) => r.games > 0).map((row) => (
                     <TableRow key={row.playerId} sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                      <TableCell>
+                      <TableCell sx={{ whiteSpace: 'nowrap', width: 140 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           <Typography variant="caption" sx={{ fontFamily: '"Roboto Mono", monospace', color: 'text.secondary', minWidth: 20 }}>
                             #{row.number}

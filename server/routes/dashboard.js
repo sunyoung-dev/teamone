@@ -46,7 +46,8 @@ router.get('/', async (req, res, next) => {
         opponent: g.opponent,
         scoreOurs: g.scoreOurs,
         scoreTheirs: g.scoreTheirs,
-        result: g.result
+        result: g.result,
+        leagueId: g.leagueId || null,
       }));
 
     // Team batting stats from all final games

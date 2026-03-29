@@ -91,6 +91,11 @@ router.get('/', async (req, res, next) => {
       hits: top3('hits')
     };
 
+    // In-progress games
+    const inProgressGames = sortedGames
+      .filter(g => g.status === 'in_progress')
+      .map(g => ({ id: g.id, date: g.date, opponent: g.opponent, venue: g.venue, leagueId: g.leagueId || null }));
+
     // Next scheduled game
     const today = new Date().toISOString().slice(0, 10);
     const nextGame = sortedGames
@@ -99,13 +104,14 @@ router.get('/', async (req, res, next) => {
       .find(g => g.status === 'scheduled' && g.date >= today);
 
     const nextGameData = nextGame
-      ? { id: nextGame.id, date: nextGame.date, opponent: nextGame.opponent, venue: nextGame.venue }
+      ? { id: nextGame.id, date: nextGame.date, opponent: nextGame.opponent, venue: nextGame.venue, leagueId: nextGame.leagueId || null }
       : null;
 
     res.json({
       success: true,
       data: {
         teamRecord,
+        inProgressGames,
         recentGames,
         teamStats,
         leaders,

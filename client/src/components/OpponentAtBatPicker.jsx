@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -161,6 +161,17 @@ export default function OpponentAtBatPicker({
   const [run, setRun] = useState(0);
   const [note, setNote] = useState('');
   const [pitcherId, setPitcherId] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      setSelectedInning(inning || 1);
+      setSelectedResult(null);
+      setRbi(0);
+      setRun(0);
+      setNote('');
+      setPitcherId('');
+    }
+  }, [open]);
 
   const reset = () => {
     setSelectedResult(null);

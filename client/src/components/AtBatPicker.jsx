@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -162,6 +162,16 @@ export default function AtBatPicker({
   const [rbi, setRbi] = useState(initialRbi);
   const [run, setRun] = useState(0);
   const [note, setNote] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      setSelectedInning(initialInning || inning || 1);
+      setSelectedResult(initialResult);
+      setRbi(initialRbi);
+      setRun(0);
+      setNote('');
+    }
+  }, [open]);
 
   const handleConfirm = () => {
     if (!selectedResult) return;

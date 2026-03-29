@@ -827,8 +827,8 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
   // Batter inning results map
   const batterInningResults = {};
   inningAtBats.forEach((ab) => {
-    if (!batterInningResults[ab.batterId]) batterInningResults[ab.batterId] = [];
-    batterInningResults[ab.batterId].push(ab);
+    if (!batterInningResults[ab.batterOrder]) batterInningResults[ab.batterOrder] = [];
+    batterInningResults[ab.batterOrder].push(ab);
   });
 
   return (
@@ -963,7 +963,7 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                 {effectiveSortedLineup.map((batter) => {
-                  const results = batterInningResults[batter.id] || [];
+                  const results = batterInningResults[batter.order] || [];
                   const isSubIn = opponentSubsThisInning.has(batter.order);
                   return (
                     <Box

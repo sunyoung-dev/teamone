@@ -1,12 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { readJSON } = require('../utils/fileStore');
+const Player = require('../models/Player');
+const Game = require('../models/Game');
 
 // At-bat result classification
 const HITS = ['1H', '2H', '3H', 'HR'];
-const OUTS_WITH_AB = ['GO', 'FO', 'SO', 'DP', 'E'];
-const ON_BASE_NO_AB = ['BB', 'HBP'];
-const SACRIFICES = ['SF', 'SH'];
 const TOTAL_BASES = { '1H': 1, '2H': 2, '3H': 3, 'HR': 4 };
 
 function count(atBats, result) {
@@ -78,46 +76,39 @@ function calculateStats(atBats) {
 // GET /api/stats/players - computed batting stats for all players
 router.get('/players', async (req, res, next) => {
   try {
-    const [playersStore, gamesStore] = await Promise.all([
-      readJSON('players.json'),
-      readJSON('games.json')
+    const [players, games] = await Promise.all([
+      Player.find().lean(),
+      Game.find().lean()
     ]);
-
-    const players = playersStore ? playersStore.players : [];
-    const games = gamesStore ? gamesStore.games : [];
 
     const { season } = req.query;
 
-    // Collect atBats per player across all games
     const atBatsByPlayer = {};
     const gamesPlayedByPlayer = {};
 
     for (const game of games) {
       if (season && game.date && !game.date.startsWith(season)) continue;
 
-      const atBats = game.atBats || [];
-      const lineupPlayerIds = new Set((game.lineup || []).map(l => l.playerId));
-
-      for (const ab of atBats) {
+      for (const ab of (game.atBats || [])) {
         if (!atBatsByPlayer[ab.playerId]) atBatsByPlayer[ab.playerId] = [];
         atBatsByPlayer[ab.playerId].push(ab);
       }
 
-      // Count games played from lineup
+      const lineupPlayerIds = new Set((game.lineup || []).map(l => l.playerId));
       for (const playerId of lineupPlayerIds) {
         gamesPlayedByPlayer[playerId] = (gamesPlayedByPlayer[playerId] || 0) + 1;
       }
     }
 
     const statsAll = players.map(player => {
-      const playerAtBats = atBatsByPlayer[player.id] || [];
+      const playerAtBats = atBatsByPlayer[player._id] || [];
       const stats = calculateStats(playerAtBats);
       return {
-        playerId: player.id,
+        playerId: player._id,
         playerName: player.name,
         number: player.number,
         position: player.position,
-        gamesPlayed: gamesPlayedByPlayer[player.id] || 0,
+        gamesPlayed: gamesPlayedByPlayer[player._id] || 0,
         ...stats
       };
     });
@@ -131,15 +122,11 @@ router.get('/players', async (req, res, next) => {
 // GET /api/stats/players/:playerId - stats for one player
 router.get('/players/:playerId', async (req, res, next) => {
   try {
-    const [playersStore, gamesStore] = await Promise.all([
-      readJSON('players.json'),
-      readJSON('games.json')
+    const [player, games] = await Promise.all([
+      Player.findById(req.params.playerId).lean(),
+      Game.find().lean()
     ]);
 
-    const players = playersStore ? playersStore.players : [];
-    const games = gamesStore ? gamesStore.games : [];
-
-    const player = players.find(p => p.id === req.params.playerId);
     if (!player) {
       return res.status(404).json({
         success: false,
@@ -155,10 +142,10 @@ router.get('/players/:playerId', async (req, res, next) => {
     for (const game of games) {
       if (season && game.date && !game.date.startsWith(season)) continue;
 
-      const inLineup = (game.lineup || []).some(l => l.playerId === player.id);
+      const inLineup = (game.lineup || []).some(l => l.playerId === player._id);
       if (inLineup) gamesPlayed++;
 
-      const gameAtBats = (game.atBats || []).filter(ab => ab.playerId === player.id);
+      const gameAtBats = (game.atBats || []).filter(ab => ab.playerId === player._id);
       playerAtBats.push(...gameAtBats);
     }
 
@@ -167,7 +154,7 @@ router.get('/players/:playerId', async (req, res, next) => {
     res.json({
       success: true,
       data: {
-        playerId: player.id,
+        playerId: player._id,
         playerName: player.name,
         number: player.number,
         position: player.position,
@@ -183,8 +170,7 @@ router.get('/players/:playerId', async (req, res, next) => {
 // GET /api/stats/team - team overall stats
 router.get('/team', async (req, res, next) => {
   try {
-    const gamesStore = await readJSON('games.json');
-    const games = gamesStore ? gamesStore.games : [];
+    const games = await Game.find().lean();
 
     const { season } = req.query;
 
@@ -204,7 +190,6 @@ router.get('/team', async (req, res, next) => {
     const runsScored = finalGames.reduce((sum, g) => sum + (g.scoreOurs || 0), 0);
     const runsAllowed = finalGames.reduce((sum, g) => sum + (g.scoreTheirs || 0), 0);
 
-    // Aggregate all atBats from all games
     const allAtBats = filteredGames.flatMap(g => g.atBats || []);
     const teamBattingStats = calculateStats(allAtBats);
 
@@ -233,13 +218,10 @@ router.get('/team', async (req, res, next) => {
 // GET /api/stats/leaders - top players by category
 router.get('/leaders', async (req, res, next) => {
   try {
-    const [playersStore, gamesStore] = await Promise.all([
-      readJSON('players.json'),
-      readJSON('games.json')
+    const [players, games] = await Promise.all([
+      Player.find({ active: true }).lean(),
+      Game.find().lean()
     ]);
-
-    const players = playersStore ? playersStore.players : [];
-    const games = gamesStore ? gamesStore.games : [];
 
     const { category = 'avg', limit = 5 } = req.query;
     const limitNum = Math.min(Number(limit) || 5, 50);
@@ -253,11 +235,10 @@ router.get('/leaders', async (req, res, next) => {
     }
 
     const statsAll = players
-      .filter(p => p.active)
       .map(player => {
-        const playerAtBats = atBatsByPlayer[player.id] || [];
+        const playerAtBats = atBatsByPlayer[player._id] || [];
         const stats = calculateStats(playerAtBats);
-        return { playerId: player.id, name: player.name, ...stats };
+        return { playerId: player._id, name: player.name, ...stats };
       })
       .filter(s => s.atBats > 0);
 
@@ -283,17 +264,13 @@ router.get('/leaders', async (req, res, next) => {
 // GET /api/stats/pitching - pitcher stats for all players across all games
 router.get('/pitching', async (req, res, next) => {
   try {
-    const [playersStore, gamesStore] = await Promise.all([
-      readJSON('players.json'),
-      readJSON('games.json')
+    const [players, games] = await Promise.all([
+      Player.find().lean(),
+      Game.find().lean()
     ]);
-
-    const players = playersStore ? playersStore.players : [];
-    const games = gamesStore ? gamesStore.games : [];
 
     const { season } = req.query;
 
-    // Collect pitching records and opponent at-bats per pitcher
     const pitchingByPitcher = {};
     const opponentAtBatsByPitcher = {};
     const gamesByPitcher = {};
@@ -301,19 +278,16 @@ router.get('/pitching', async (req, res, next) => {
     for (const game of games) {
       if (season && game.date && !game.date.startsWith(season)) continue;
 
-      const pitchingRecords = game.pitching || [];
-      const opponentAtBats = game.opponentAtBats || [];
-
       const pitcherIdsInGame = new Set();
 
-      for (const record of pitchingRecords) {
+      for (const record of (game.pitching || [])) {
         const pid = record.pitcherId;
         if (!pitchingByPitcher[pid]) pitchingByPitcher[pid] = [];
         pitchingByPitcher[pid].push(record);
         pitcherIdsInGame.add(pid);
       }
 
-      for (const oab of opponentAtBats) {
+      for (const oab of (game.opponentAtBats || [])) {
         const pid = oab.pitcherId;
         if (!opponentAtBatsByPitcher[pid]) opponentAtBatsByPitcher[pid] = [];
         opponentAtBatsByPitcher[pid].push(oab);
@@ -325,8 +299,8 @@ router.get('/pitching', async (req, res, next) => {
     }
 
     const statsAll = players.map(player => {
-      const records = pitchingByPitcher[player.id] || [];
-      const oabs = opponentAtBatsByPitcher[player.id] || [];
+      const records = pitchingByPitcher[player._id] || [];
+      const oabs = opponentAtBatsByPitcher[player._id] || [];
 
       const ip = records.reduce((sum, r) => sum + (r.endInning - r.startInning + 1), 0);
       const tbf = oabs.length;
@@ -339,11 +313,11 @@ router.get('/pitching', async (req, res, next) => {
       const era = ip > 0 ? Math.round((er / ip) * 9 * 100) / 100 : 0;
 
       return {
-        playerId: player.id,
+        playerId: player._id,
         playerName: player.name,
         number: player.number,
         position: player.position,
-        games: gamesByPitcher[player.id] || 0,
+        games: gamesByPitcher[player._id] || 0,
         ip,
         tbf,
         h,

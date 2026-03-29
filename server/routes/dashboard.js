@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { readJSON } = require('../utils/fileStore');
+const Player = require('../models/Player');
+const Game = require('../models/Game');
 const { calculateStats } = require('./stats');
 
 function round3(n) {
@@ -10,19 +11,23 @@ function round3(n) {
 // GET /api/dashboard
 router.get('/', async (req, res, next) => {
   try {
-    const [playersStore, gamesStore] = await Promise.all([
-      readJSON('players.json'),
-      readJSON('games.json')
+    const [players, games] = await Promise.all([
+      Player.find({ active: true }).lean(),
+      Game.find().lean()
     ]);
 
-    const players = playersStore ? playersStore.players : [];
-    const games = gamesStore ? gamesStore.games : [];
+    // lean() returns plain objects with _id, map to id
+    const normGame = g => ({ ...g, id: g._id });
+    const normPlayer = p => ({ ...p, id: p._id });
+
+    const normalizedGames = games.map(normGame);
+    const normalizedPlayers = players.map(normPlayer);
 
     // Sort all games by date descending
-    const sortedGames = games.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    const sortedGames = normalizedGames.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
     // Team record from final games
-    const finalGames = games.filter(g => g.status === 'final');
+    const finalGames = normalizedGames.filter(g => g.status === 'final');
     const wins = finalGames.filter(g => g.result === 'W').length;
     const losses = finalGames.filter(g => g.result === 'L').length;
     const draws = finalGames.filter(g => g.result === 'D').length;
@@ -63,8 +68,7 @@ router.get('/', async (req, res, next) => {
       }
     }
 
-    const playerStats = players
-      .filter(p => p.active)
+    const playerStats = normalizedPlayers
       .map(player => {
         const pAtBats = atBatsByPlayer[player.id] || [];
         const stats = calculateStats(pAtBats);

@@ -1,0 +1,13 @@
+{
+  "leagues": [
+    {
+      "id": "league001",
+      "name": "2026 수도권 여자야구리그",
+      "season": "2026",
+      "organizer": "수도권야구협회",
+      "description": "수도권 여자 사회인 야구 리그",
+      "startDate": "2026-03-01",
+      "endDate": "2026-10-31"
+    }
+  ]
+}

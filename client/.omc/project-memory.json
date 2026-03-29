@@ -1,0 +1,159 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1774780485339,
+  "projectRoot": "/Users/sunyoung/claude/teamone-wb/client",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "react",
+        "version": "18.2.0",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "18.2.0",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "5.0.0",
+        "category": "build"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "vite",
+      "build": "vite build",
+      "preview": "vite preview"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": "ES modules",
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "public",
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 2,
+      "lastAccessed": 1774780485271,
+      "keyFiles": [
+        "index.html",
+        "logo.jpeg"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 1,
+      "lastAccessed": 1774780485278,
+      "keyFiles": [
+        "logo.jpeg"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 4,
+      "lastAccessed": 1774780485278,
+      "keyFiles": [
+        "App.jsx",
+        "api.js",
+        "main.jsx",
+        "theme.js"
+      ]
+    },
+    "dist/assets": {
+      "path": "dist/assets",
+      "purpose": "Static assets",
+      "fileCount": 1,
+      "lastAccessed": 1774780485279,
+      "keyFiles": [
+        "index-CQSO5J9g.js"
+      ]
+    },
+    "src/components": {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 5,
+      "lastAccessed": 1774780485280,
+      "keyFiles": [
+        "AtBatPicker.jsx",
+        "LoadingSpinner.jsx",
+        "OpponentAtBatPicker.jsx"
+      ]
+    },
+    "src/pages": {
+      "path": "src/pages",
+      "purpose": "Page components",
+      "fileCount": 9,
+      "lastAccessed": 1774780485281,
+      "keyFiles": [
+        "DashboardPage.jsx",
+        "GameDetailPage.jsx",
+        "GameFormPage.jsx"
+      ]
+    },
+    "src/utils": {
+      "path": "src/utils",
+      "purpose": "Utility functions",
+      "fileCount": 3,
+      "lastAccessed": 1774780485281,
+      "keyFiles": [
+        "constants.js",
+        "lineup.js",
+        "statsCalculator.js"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src/pages/StatsPage.jsx",
+      "accessCount": 10,
+      "lastAccessed": 1774780636655,
+      "type": "file"
+    },
+    {
+      "path": "src/pages/DashboardPage.jsx",
+      "accessCount": 5,
+      "lastAccessed": 1774780549311,
+      "type": "file"
+    },
+    {
+      "path": "src/pages/GamesPage.jsx",
+      "accessCount": 2,
+      "lastAccessed": 1774780517664,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

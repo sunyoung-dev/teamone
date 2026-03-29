@@ -1,0 +1,281 @@
+const express = require('express');
+const router = express.Router();
+const Game = require('../models/Game');
+const nextId = require('../utils/nextId');
+const atBatsRouter = require('./atbats');
+const opponentAtbatsRouter = require('./opponentAtbats');
+const pitchingRouter = require('./pitching');
+const substitutionsRouter = require('./substitutions');
+
+const VALID_POSITIONS = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
+const VALID_RESULTS = ['W', 'L', 'D', null];
+const VALID_STATUSES = ['scheduled', 'in_progress', 'final'];
+
+function validateLineup(lineup) {
+  for (const entry of lineup) {
+    if (!entry.playerId || !entry.battingOrder || !entry.position) {
+      return 'playerId, battingOrder, position 필드가 필요합니다';
+    }
+    if (!VALID_POSITIONS.includes(entry.position)) {
+      return `position은 ${VALID_POSITIONS.join(', ')} 중 하나여야 합니다`;
+    }
+    if (entry.battingOrder < 1 || entry.battingOrder > 9) {
+      return 'battingOrder는 1에서 9 사이여야 합니다';
+    }
+  }
+  const orders = lineup.map(e => e.battingOrder);
+  if (new Set(orders).size !== orders.length) return '타순이 중복되었습니다';
+  const playerIds = lineup.map(e => e.playerId);
+  if (new Set(playerIds).size !== playerIds.length) return '동일한 선수가 중복 배치되었습니다';
+  return null;
+}
+
+// GET /api/games
+router.get('/', async (req, res, next) => {
+  try {
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.season) filter.date = { $regex: `^${req.query.season}` };
+
+    const games = await Game.find(filter).sort({ date: -1 });
+    res.json({ success: true, data: games });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/games/:id
+router.get('/:id', async (req, res, next) => {
+  try {
+    const game = await Game.findById(req.params.id);
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다', details: { id: req.params.id } },
+      });
+    }
+    res.json({ success: true, data: game });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/games
+router.post('/', async (req, res, next) => {
+  try {
+    const { date, opponent, venue, result, scoreOurs, scoreTheirs, innings, status, lineup, leagueId } = req.body;
+
+    if (!date || !opponent) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_REQUEST', message: 'date, opponent 필드가 필요합니다' },
+      });
+    }
+    if (status && !VALID_STATUSES.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_REQUEST', message: `status는 ${VALID_STATUSES.join(', ')} 중 하나여야 합니다` },
+      });
+    }
+    if (result !== undefined && !VALID_RESULTS.includes(result)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_REQUEST', message: 'result는 W, L, D, null 중 하나여야 합니다' },
+      });
+    }
+    if (lineup && Array.isArray(lineup)) {
+      const lineupError = validateLineup(lineup);
+      if (lineupError) {
+        return res.status(400).json({ success: false, error: { code: 'INVALID_LINEUP', message: lineupError } });
+      }
+    }
+
+    const id = await nextId(Game, 'g');
+    const game = new Game({
+      _id: id,
+      date: String(date),
+      opponent: String(opponent),
+      venue: venue ? String(venue) : '',
+      result: result !== undefined ? result : null,
+      scoreOurs: scoreOurs !== undefined ? Number(scoreOurs) : 0,
+      scoreTheirs: scoreTheirs !== undefined ? Number(scoreTheirs) : 0,
+      innings: innings !== undefined ? Number(innings) : 7,
+      status: status || 'scheduled',
+      leagueId: leagueId || null,
+      lineup: lineup && Array.isArray(lineup) ? lineup : [],
+      atBats: [],
+    });
+    await game.save();
+
+    res.status(201).json({ success: true, data: game });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/games/:id
+router.put('/:id', async (req, res, next) => {
+  try {
+    const game = await Game.findById(req.params.id);
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다', details: { id: req.params.id } },
+      });
+    }
+
+    const { date, opponent, venue, result, scoreOurs, scoreTheirs, innings, status, lineup, leagueId } = req.body;
+
+    if (status && !VALID_STATUSES.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_REQUEST', message: `status는 ${VALID_STATUSES.join(', ')} 중 하나여야 합니다` },
+      });
+    }
+    if (result !== undefined && !VALID_RESULTS.includes(result)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_REQUEST', message: 'result는 W, L, D, null 중 하나여야 합니다' },
+      });
+    }
+    if (lineup && Array.isArray(lineup)) {
+      const lineupError = validateLineup(lineup);
+      if (lineupError) {
+        return res.status(400).json({ success: false, error: { code: 'INVALID_LINEUP', message: lineupError } });
+      }
+    }
+
+    if (date !== undefined) game.date = String(date);
+    if (opponent !== undefined) game.opponent = String(opponent);
+    if (venue !== undefined) game.venue = String(venue);
+    if (result !== undefined) game.result = result;
+    if (scoreOurs !== undefined) game.scoreOurs = Number(scoreOurs);
+    if (scoreTheirs !== undefined) game.scoreTheirs = Number(scoreTheirs);
+    if (innings !== undefined) game.innings = Number(innings);
+    if (status !== undefined) game.status = status;
+    if (leagueId !== undefined) game.leagueId = leagueId || null;
+    if (lineup !== undefined) game.lineup = lineup;
+
+    await game.save();
+    res.json({ success: true, data: game });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/games/:id
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const game = await Game.findById(req.params.id);
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다', details: { id: req.params.id } },
+      });
+    }
+    await game.deleteOne();
+    res.json({ success: true, data: null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/games/:id/lineup
+router.get('/:id/lineup', async (req, res, next) => {
+  try {
+    const game = await Game.findById(req.params.id);
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다', details: { id: req.params.id } },
+      });
+    }
+    res.json({ success: true, data: game.lineup || [] });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/games/:id/lineup
+router.put('/:id/lineup', async (req, res, next) => {
+  try {
+    const game = await Game.findById(req.params.id);
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다', details: { id: req.params.id } },
+      });
+    }
+
+    const { lineup } = req.body;
+    if (!Array.isArray(lineup)) {
+      return res.status(400).json({ success: false, error: { code: 'INVALID_REQUEST', message: 'lineup 배열이 필요합니다' } });
+    }
+    const lineupError = validateLineup(lineup);
+    if (lineupError) {
+      return res.status(400).json({ success: false, error: { code: 'INVALID_LINEUP', message: lineupError } });
+    }
+
+    game.lineup = lineup;
+    await game.save();
+    res.json({ success: true, data: game.lineup });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/games/:id/opponent-lineup
+router.get('/:id/opponent-lineup', async (req, res, next) => {
+  try {
+    const game = await Game.findById(req.params.id);
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다', details: { id: req.params.id } },
+      });
+    }
+    res.json({ success: true, data: game.opponentLineup || [] });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/games/:id/opponent-lineup
+router.put('/:id/opponent-lineup', async (req, res, next) => {
+  try {
+    const game = await Game.findById(req.params.id);
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다', details: { id: req.params.id } },
+      });
+    }
+
+    const { lineup } = req.body;
+    if (!Array.isArray(lineup)) {
+      return res.status(400).json({ success: false, error: { code: 'INVALID_REQUEST', message: 'lineup 배열이 필요합니다' } });
+    }
+    for (const entry of lineup) {
+      if (!entry.order || !entry.name) {
+        return res.status(400).json({
+          success: false,
+          error: { code: 'INVALID_REQUEST', message: 'opponentLineup 각 항목에 order, name 필드가 필요합니다' },
+        });
+      }
+    }
+
+    game.opponentLineup = lineup;
+    await game.save();
+    res.json({ success: true, data: game.opponentLineup });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Mount sub-routers
+router.use('/:gameId/atbats', atBatsRouter);
+router.use('/:gameId/opponent-atbats', opponentAtbatsRouter);
+router.use('/:gameId/pitching', pitchingRouter);
+router.use('/:gameId/substitutions', substitutionsRouter);
+
+module.exports = router;

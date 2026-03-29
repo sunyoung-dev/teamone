@@ -1,0 +1,591 @@
+{
+  "games": [
+    {
+      "id": "g001",
+      "date": "2026-03-22",
+      "opponent": "서울 레드삭스",
+      "venue": "목동야구장",
+      "result": "W",
+      "scoreOurs": 7,
+      "scoreTheirs": 4,
+      "innings": 7,
+      "status": "final",
+      "lineup": [
+        {
+          "playerId": "p002",
+          "battingOrder": 1,
+          "position": "CF"
+        },
+        {
+          "playerId": "p009",
+          "battingOrder": 2,
+          "position": "2B"
+        },
+        {
+          "playerId": "p003",
+          "battingOrder": 3,
+          "position": "1B"
+        },
+        {
+          "playerId": "p006",
+          "battingOrder": 4,
+          "position": "3B"
+        },
+        {
+          "playerId": "p001",
+          "battingOrder": 5,
+          "position": "SS"
+        },
+        {
+          "playerId": "p010",
+          "battingOrder": 6,
+          "position": "DH"
+        },
+        {
+          "playerId": "p007",
+          "battingOrder": 7,
+          "position": "LF"
+        },
+        {
+          "playerId": "p008",
+          "battingOrder": 8,
+          "position": "RF"
+        },
+        {
+          "playerId": "p005",
+          "battingOrder": 9,
+          "position": "C"
+        }
+      ],
+      "atBats": [
+        {
+          "id": "ab001",
+          "playerId": "p002",
+          "inning": 1,
+          "order": 1,
+          "result": "1H",
+          "rbi": 0,
+          "note": "우중간 안타"
+        },
+        {
+          "id": "ab002",
+          "playerId": "p009",
+          "inning": 1,
+          "order": 2,
+          "result": "BB",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab003",
+          "playerId": "p003",
+          "inning": 1,
+          "order": 3,
+          "result": "2H",
+          "rbi": 2,
+          "note": "좌중간 2루타"
+        },
+        {
+          "id": "ab004",
+          "playerId": "p006",
+          "inning": 1,
+          "order": 4,
+          "result": "GO",
+          "rbi": 0,
+          "note": "유격수 방향"
+        },
+        {
+          "id": "ab005",
+          "playerId": "p001",
+          "inning": 1,
+          "order": 5,
+          "result": "SO",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab006",
+          "playerId": "p010",
+          "inning": 2,
+          "order": 1,
+          "result": "1H",
+          "rbi": 0,
+          "note": "내야 안타"
+        },
+        {
+          "id": "ab007",
+          "playerId": "p007",
+          "inning": 2,
+          "order": 2,
+          "result": "HR",
+          "rbi": 2,
+          "note": "좌월 홈런"
+        },
+        {
+          "id": "ab008",
+          "playerId": "p008",
+          "inning": 2,
+          "order": 3,
+          "result": "FO",
+          "rbi": 0,
+          "note": "우익수 정면"
+        },
+        {
+          "id": "ab009",
+          "playerId": "p005",
+          "inning": 2,
+          "order": 4,
+          "result": "BB",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab010",
+          "playerId": "p002",
+          "inning": 2,
+          "order": 5,
+          "result": "DP",
+          "rbi": 0,
+          "note": "유격수 병살"
+        },
+        {
+          "id": "ab011",
+          "playerId": "p009",
+          "inning": 3,
+          "order": 1,
+          "result": "SO",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab012",
+          "playerId": "p003",
+          "inning": 3,
+          "order": 2,
+          "result": "1H",
+          "rbi": 0,
+          "note": "1루 내야 안타"
+        },
+        {
+          "id": "ab013",
+          "playerId": "p006",
+          "inning": 3,
+          "order": 3,
+          "result": "SF",
+          "rbi": 1,
+          "note": "중견수 희생플라이"
+        },
+        {
+          "id": "ab014",
+          "playerId": "p001",
+          "inning": 3,
+          "order": 4,
+          "result": "GO",
+          "rbi": 0,
+          "note": "2루수 방향"
+        },
+        {
+          "id": "ab015",
+          "playerId": "p010",
+          "inning": 4,
+          "order": 1,
+          "result": "3H",
+          "rbi": 1,
+          "note": "우중간 3루타"
+        },
+        {
+          "id": "ab016",
+          "playerId": "p007",
+          "inning": 4,
+          "order": 2,
+          "result": "SH",
+          "rbi": 0,
+          "note": "번트 진루타"
+        },
+        {
+          "id": "ab017",
+          "playerId": "p008",
+          "inning": 4,
+          "order": 3,
+          "result": "1H",
+          "rbi": 1,
+          "note": "중전 안타"
+        },
+        {
+          "id": "ab018",
+          "playerId": "p005",
+          "inning": 4,
+          "order": 4,
+          "result": "SO",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab019",
+          "playerId": "p002",
+          "inning": 5,
+          "order": 1,
+          "result": "BB",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab020",
+          "playerId": "p009",
+          "inning": 5,
+          "order": 2,
+          "result": "1H",
+          "rbi": 0,
+          "note": "좌전 안타"
+        },
+        {
+          "id": "ab021",
+          "playerId": "p003",
+          "inning": 5,
+          "order": 3,
+          "result": "FO",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab022",
+          "playerId": "p006",
+          "inning": 5,
+          "order": 4,
+          "result": "SO",
+          "rbi": 0,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "g002",
+      "date": "2026-03-29",
+      "opponent": "강남 블루버즈",
+      "venue": "잠실보조구장",
+      "result": "L",
+      "scoreOurs": 3,
+      "scoreTheirs": 5,
+      "innings": 7,
+      "status": "final",
+      "lineup": [
+        {
+          "playerId": "p002",
+          "battingOrder": 1,
+          "position": "CF"
+        },
+        {
+          "playerId": "p015",
+          "battingOrder": 2,
+          "position": "2B"
+        },
+        {
+          "playerId": "p014",
+          "battingOrder": 3,
+          "position": "1B"
+        },
+        {
+          "playerId": "p006",
+          "battingOrder": 4,
+          "position": "3B"
+        },
+        {
+          "playerId": "p012",
+          "battingOrder": 5,
+          "position": "SS"
+        },
+        {
+          "playerId": "p010",
+          "battingOrder": 6,
+          "position": "DH"
+        },
+        {
+          "playerId": "p017",
+          "battingOrder": 7,
+          "position": "LF"
+        },
+        {
+          "playerId": "p019",
+          "battingOrder": 8,
+          "position": "RF"
+        },
+        {
+          "playerId": "p013",
+          "battingOrder": 9,
+          "position": "C"
+        }
+      ],
+      "atBats": [
+        {
+          "id": "ab101",
+          "playerId": "p002",
+          "inning": 1,
+          "order": 1,
+          "result": "GO",
+          "rbi": 0,
+          "note": "3루수 방향"
+        },
+        {
+          "id": "ab102",
+          "playerId": "p015",
+          "inning": 1,
+          "order": 2,
+          "result": "SO",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab103",
+          "playerId": "p014",
+          "inning": 1,
+          "order": 3,
+          "result": "1H",
+          "rbi": 0,
+          "note": "우전 안타"
+        },
+        {
+          "id": "ab104",
+          "playerId": "p006",
+          "inning": 1,
+          "order": 4,
+          "result": "FO",
+          "rbi": 0,
+          "note": "좌익수 정면"
+        },
+        {
+          "id": "ab105",
+          "playerId": "p012",
+          "inning": 2,
+          "order": 1,
+          "result": "BB",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab106",
+          "playerId": "p010",
+          "inning": 2,
+          "order": 2,
+          "result": "2H",
+          "rbi": 1,
+          "note": "좌중간 2루타"
+        },
+        {
+          "id": "ab107",
+          "playerId": "p017",
+          "inning": 2,
+          "order": 3,
+          "result": "SO",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab108",
+          "playerId": "p019",
+          "inning": 2,
+          "order": 4,
+          "result": "GO",
+          "rbi": 0,
+          "note": "유격수 방향"
+        },
+        {
+          "id": "ab109",
+          "playerId": "p013",
+          "inning": 3,
+          "order": 1,
+          "result": "HBP",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab110",
+          "playerId": "p002",
+          "inning": 3,
+          "order": 2,
+          "result": "1H",
+          "rbi": 0,
+          "note": "중전 안타"
+        },
+        {
+          "id": "ab111",
+          "playerId": "p015",
+          "inning": 3,
+          "order": 3,
+          "result": "DP",
+          "rbi": 0,
+          "note": "2루수 병살"
+        },
+        {
+          "id": "ab112",
+          "playerId": "p014",
+          "inning": 4,
+          "order": 1,
+          "result": "SO",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab113",
+          "playerId": "p006",
+          "inning": 4,
+          "order": 2,
+          "result": "HR",
+          "rbi": 2,
+          "note": "좌월 솔로 홈런"
+        },
+        {
+          "id": "ab114",
+          "playerId": "p012",
+          "inning": 4,
+          "order": 3,
+          "result": "FO",
+          "rbi": 0,
+          "note": "우익수 정면"
+        },
+        {
+          "id": "ab115",
+          "playerId": "p010",
+          "inning": 5,
+          "order": 1,
+          "result": "BB",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab116",
+          "playerId": "p017",
+          "inning": 5,
+          "order": 2,
+          "result": "SH",
+          "rbi": 0,
+          "note": "번트"
+        },
+        {
+          "id": "ab117",
+          "playerId": "p019",
+          "inning": 5,
+          "order": 3,
+          "result": "SO",
+          "rbi": 0,
+          "note": ""
+        },
+        {
+          "id": "ab118",
+          "playerId": "p013",
+          "inning": 5,
+          "order": 4,
+          "result": "GO",
+          "rbi": 0,
+          "note": "1루수 정면"
+        }
+      ],
+      "pitching": [
+        {
+          "id": "pit001",
+          "pitcherId": "p002",
+          "startInning": 1,
+          "endInning": 1,
+          "pitchCount": 0
+        }
+      ],
+      "substitutions": [
+        {
+          "id": "sub001",
+          "inning": 3,
+          "outPlayerId": "p006",
+          "outPlayerName": null,
+          "inPlayerId": "p003",
+          "inPlayerName": null,
+          "battingOrder": 4,
+          "position": "2B",
+          "isOpponent": false
+        }
+      ]
+    },
+    {
+      "id": "g003",
+      "date": "2026-03-29",
+      "opponent": "예를 들어서 .. ",
+      "venue": "123",
+      "result": null,
+      "scoreOurs": 1,
+      "scoreTheirs": 2,
+      "innings": 7,
+      "status": "scheduled",
+      "lineup": [
+        {
+          "playerId": "p001",
+          "battingOrder": 1,
+          "position": "SS"
+        },
+        {
+          "playerId": "p002",
+          "battingOrder": 2,
+          "position": "CF"
+        },
+        {
+          "playerId": "p003",
+          "battingOrder": 3,
+          "position": "1B"
+        },
+        {
+          "playerId": "p004",
+          "battingOrder": 4,
+          "position": "P"
+        },
+        {
+          "playerId": "p005",
+          "battingOrder": 5,
+          "position": "C"
+        },
+        {
+          "playerId": "p007",
+          "battingOrder": 6,
+          "position": "LF"
+        },
+        {
+          "playerId": "p006",
+          "battingOrder": 7,
+          "position": "3B"
+        }
+      ],
+      "atBats": [
+        {
+          "id": "ab001",
+          "inning": 1,
+          "playerId": "p001",
+          "result": "2H",
+          "order": 1
+        },
+        {
+          "id": "ab002",
+          "inning": 1,
+          "playerId": "p002",
+          "result": "FO",
+          "order": 2
+        },
+        {
+          "id": "ab003",
+          "inning": 1,
+          "playerId": "p003",
+          "result": "HR",
+          "order": 3
+        },
+        {
+          "id": "ab004",
+          "inning": 2,
+          "playerId": "p003",
+          "result": "FO",
+          "order": 1
+        },
+        {
+          "id": "ab005",
+          "inning": 2,
+          "playerId": "p001",
+          "result": "3H",
+          "order": 2
+        }
+      ]
+    }
+  ]
+}

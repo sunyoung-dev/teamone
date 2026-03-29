@@ -1,0 +1,115 @@
+const express = require('express');
+const router = express.Router();
+const { readJSON } = require('../utils/fileStore');
+const { calculateStats } = require('./stats');
+
+function round3(n) {
+  return Math.round(n * 1000) / 1000;
+}
+
+// GET /api/dashboard
+router.get('/', async (req, res, next) => {
+  try {
+    const [playersStore, gamesStore] = await Promise.all([
+      readJSON('players.json'),
+      readJSON('games.json')
+    ]);
+
+    const players = playersStore ? playersStore.players : [];
+    const games = gamesStore ? gamesStore.games : [];
+
+    // Sort all games by date descending
+    const sortedGames = games.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    // Team record from final games
+    const finalGames = games.filter(g => g.status === 'final');
+    const wins = finalGames.filter(g => g.result === 'W').length;
+    const losses = finalGames.filter(g => g.result === 'L').length;
+    const draws = finalGames.filter(g => g.result === 'D').length;
+    const gamesPlayed = finalGames.length;
+    const winPct = gamesPlayed > 0 ? round3(wins / gamesPlayed) : 0;
+
+    const teamRecord = { wins, losses, draws, winPct };
+
+    // Recent 5 final games
+    const recentGames = sortedGames
+      .filter(g => g.status === 'final')
+      .slice(0, 5)
+      .map(g => ({
+        id: g.id,
+        date: g.date,
+        opponent: g.opponent,
+        scoreOurs: g.scoreOurs,
+        scoreTheirs: g.scoreTheirs,
+        result: g.result
+      }));
+
+    // Team batting stats from all final games
+    const allAtBats = finalGames.flatMap(g => g.atBats || []);
+    const teamBatting = calculateStats(allAtBats);
+    const teamStats = {
+      avg: teamBatting.avg,
+      obp: teamBatting.obp,
+      slg: teamBatting.slg,
+      ops: teamBatting.ops
+    };
+
+    // Leaders: top 3 by AVG, HR, H (with at least 1 AB)
+    const atBatsByPlayer = {};
+    for (const game of finalGames) {
+      for (const ab of (game.atBats || [])) {
+        if (!atBatsByPlayer[ab.playerId]) atBatsByPlayer[ab.playerId] = [];
+        atBatsByPlayer[ab.playerId].push(ab);
+      }
+    }
+
+    const playerStats = players
+      .filter(p => p.active)
+      .map(player => {
+        const pAtBats = atBatsByPlayer[player.id] || [];
+        const stats = calculateStats(pAtBats);
+        return { playerId: player.id, name: player.name, ...stats };
+      })
+      .filter(s => s.atBats > 0);
+
+    function top3(field) {
+      return playerStats
+        .slice()
+        .sort((a, b) => (b[field] || 0) - (a[field] || 0))
+        .slice(0, 3)
+        .map(s => ({ playerId: s.playerId, name: s.name, value: s[field] }));
+    }
+
+    const leaders = {
+      avg: top3('avg'),
+      homeRuns: top3('homeRuns'),
+      hits: top3('hits')
+    };
+
+    // Next scheduled game
+    const today = new Date().toISOString().slice(0, 10);
+    const nextGame = sortedGames
+      .slice()
+      .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+      .find(g => g.status === 'scheduled' && g.date >= today);
+
+    const nextGameData = nextGame
+      ? { id: nextGame.id, date: nextGame.date, opponent: nextGame.opponent, venue: nextGame.venue }
+      : null;
+
+    res.json({
+      success: true,
+      data: {
+        teamRecord,
+        recentGames,
+        teamStats,
+        leaders,
+        nextGame: nextGameData
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;

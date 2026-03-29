@@ -1,0 +1,26 @@
+{
+  "players": [
+    { "id": "p001", "name": "김수영", "number": 1, "position": "SS", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p002", "name": "이지현", "number": 2, "position": "CF", "battingHand": "L", "throwingHand": "R", "active": true },
+    { "id": "p003", "name": "박민아", "number": 3, "position": "1B", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p004", "name": "최하늘", "number": 4, "position": "P", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p005", "name": "정유리", "number": 5, "position": "C", "battingHand": "S", "throwingHand": "R", "active": true },
+    { "id": "p006", "name": "한소희", "number": 6, "position": "3B", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p007", "name": "윤서연", "number": 7, "position": "LF", "battingHand": "L", "throwingHand": "L", "active": true },
+    { "id": "p008", "name": "강다은", "number": 8, "position": "RF", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p009", "name": "조예린", "number": 9, "position": "2B", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p010", "name": "신지아", "number": 10, "position": "DH", "battingHand": "L", "throwingHand": "R", "active": true },
+    { "id": "p011", "name": "오채원", "number": 11, "position": "P", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p012", "name": "문수빈", "number": 12, "position": "SS", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p013", "name": "류나현", "number": 13, "position": "C", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p014", "name": "임하은", "number": 14, "position": "1B", "battingHand": "L", "throwingHand": "L", "active": true },
+    { "id": "p015", "name": "배서현", "number": 15, "position": "2B", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p016", "name": "홍지민", "number": 16, "position": "3B", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p017", "name": "전아영", "number": 17, "position": "LF", "battingHand": "S", "throwingHand": "R", "active": true },
+    { "id": "p018", "name": "남은서", "number": 18, "position": "CF", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p019", "name": "황민경", "number": 19, "position": "RF", "battingHand": "L", "throwingHand": "R", "active": true },
+    { "id": "p020", "name": "서지은", "number": 20, "position": "DH", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p021", "name": "구하린", "number": 21, "position": "P", "battingHand": "R", "throwingHand": "R", "active": true },
+    { "id": "p022", "name": "노예은", "number": 22, "position": "CF", "battingHand": "R", "throwingHand": "R", "active": true }
+  ]
+}

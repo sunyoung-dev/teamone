@@ -27,7 +27,7 @@ import { formatAvg } from '../utils/statsCalculator.js';
 function RecordCard({ record }) {
   const { wins = 0, losses = 0, draws = 0, winPct = 0 } = record || {};
   return (
-    <Card sx={{ background: 'linear-gradient(135deg, #0d1b3e 0%, #1a2d5a 100%)', color: '#fff' }}>
+    <Card sx={{ bgcolor: '#0d1b3e', color: '#fff' }}>
       <CardContent sx={{ p: 2.5 }}>
         <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
           2026 시즌 성적

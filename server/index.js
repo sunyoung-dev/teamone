@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const morgan = require('morgan');
 const path = require('path');
 const mongoose = require('mongoose');
 
@@ -19,6 +20,7 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 // Middleware
 app.use(cors({ origin: CORS_ORIGIN }));
 app.use(express.json());
+app.use(morgan('combined'));
 
 // Routes
 app.use('/api/players', playersRouter);

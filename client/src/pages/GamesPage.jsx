@@ -16,13 +16,16 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ScoreChip from '../components/ScoreChip.jsx';
 
 function GameCard({ game, leagueName, onClick }) {
+  const today = new Date().toISOString().slice(0, 10);
   const isInProgress = game.status === 'in_progress';
+  const isLive = isInProgress && game.date === today;
+  const isUpcoming = isInProgress && game.date !== today;
   return (
     <Card
       sx={{
         mb: 1.5,
-        border: isInProgress ? '2px solid' : 'none',
-        borderColor: 'secondary.main',
+        border: (isLive || isUpcoming) ? '2px solid' : 'none',
+        borderColor: isLive ? 'secondary.main' : 'warning.main',
       }}
     >
       <CardActionArea onClick={onClick}>
@@ -32,8 +35,11 @@ function GameCard({ game, leagueName, onClick }) {
               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                 vs {game.opponent}
               </Typography>
-              {isInProgress && (
+              {isLive && (
                 <Chip label="진행중" size="small" color="secondary" sx={{ height: 20, fontSize: '0.65rem' }} />
+              )}
+              {isUpcoming && (
+                <Chip label="진행예정" size="small" color="warning" sx={{ height: 20, fontSize: '0.65rem' }} />
               )}
               {leagueName && (
                 <Chip label={leagueName} size="small" variant="outlined" color="primary" sx={{ height: 20, fontSize: '0.65rem' }} />

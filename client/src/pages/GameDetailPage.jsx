@@ -55,8 +55,11 @@ import { getEffectiveLineup, getEffectiveOpponentLineup } from '../utils/lineup.
 // ─── GameInfoCard ─────────────────────────────────────────────────────────────
 
 function GameInfoCard({ game, ourScore, leagueName }) {
+  const today = new Date().toISOString().slice(0, 10);
   const isFinal = game.status === 'final';
   const isInProgress = game.status === 'in_progress';
+  const isLive = isInProgress && game.date === today;
+  const isUpcoming = isInProgress && game.date !== today;
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent sx={{ p: 2 }}>
@@ -80,7 +83,7 @@ function GameInfoCard({ game, ourScore, leagueName }) {
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{game.venue}</Typography>
             </Box>
           )}
-          {(isFinal || isInProgress) && (
+          {(isFinal || isLive) && (
             <Box>
               <Typography variant="caption" color="text.secondary">스코어</Typography>
               <Typography variant="body2" sx={{ fontFamily: '"Roboto Mono", monospace', fontWeight: 700 }}>
@@ -90,9 +93,9 @@ function GameInfoCard({ game, ourScore, leagueName }) {
           )}
         </Box>
         <Chip
-          label={isFinal ? '종료' : isInProgress ? '진행중' : '예정'}
+          label={isFinal ? '종료' : isLive ? '진행중' : isUpcoming ? '진행예정' : '예정'}
           size="small"
-          color={isInProgress ? 'secondary' : 'default'}
+          color={isLive ? 'secondary' : isUpcoming ? 'warning' : 'default'}
           sx={{ mt: 0.5 }}
         />
       </CardContent>

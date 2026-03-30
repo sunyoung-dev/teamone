@@ -297,14 +297,8 @@ export default function DashboardPage() {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <RecordCard record={data?.teamRecord} />
 
-        <InProgressGamesCard
-          games={data?.inProgressGames}
-          leagueMap={leagueMap}
-          onGameClick={(id) => navigate(`/games/${id}`)}
-        />
-
         <UpcomingGamesCard
-          games={data?.upcomingGames}
+          games={(data?.upcomingGames || []).slice(0, 2)}
           leagueMap={leagueMap}
           onGameClick={(id) => navigate(`/games/${id}`)}
         />

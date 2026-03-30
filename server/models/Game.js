@@ -7,8 +7,10 @@ const lineupEntrySchema = new mongoose.Schema({
 }, { _id: false });
 
 const opponentLineupEntrySchema = new mongoose.Schema({
+  id: String,
   order: Number,
   name: String,
+  number: String,
   position: String,
 }, { _id: false });
 

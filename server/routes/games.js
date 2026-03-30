@@ -264,6 +264,24 @@ router.put('/:id/opponent-lineup', async (req, res, next) => {
       }
     }
 
+    // Sync batterName in opponentAtBats when a player's name changes
+    const oldLineup = game.opponentLineup || [];
+    const nameChanges = {};
+    for (const newEntry of lineup) {
+      if (!newEntry.id) continue;
+      const oldEntry = oldLineup.find(e => e.id === newEntry.id);
+      if (oldEntry && oldEntry.name && oldEntry.name !== newEntry.name) {
+        nameChanges[oldEntry.name] = newEntry.name;
+      }
+    }
+    if (Object.keys(nameChanges).length > 0) {
+      for (const oab of (game.opponentAtBats || [])) {
+        if (nameChanges[oab.batterName]) {
+          oab.batterName = nameChanges[oab.batterName];
+        }
+      }
+    }
+
     game.opponentLineup = lineup;
     await game.save();
     res.json({ success: true, data: game.opponentLineup });

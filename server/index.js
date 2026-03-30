@@ -52,7 +52,7 @@ app.get('*', (req, res) => {
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log(`Connected to MongoDB: ${MONGODB_URI}`);
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`TeamOne WB server running on http://localhost:${PORT}`);
       console.log(`CORS enabled for http://localhost:5173`);
     });

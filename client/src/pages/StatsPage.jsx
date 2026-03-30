@@ -149,11 +149,14 @@ export default function StatsPage() {
           <Table size="small" sx={{ minWidth: 500 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: 'background.default' }}>
-                {COLUMNS.map((col) => (
+                {COLUMNS.map((col, colIdx) => (
                   <TableCell
                     key={col.id}
                     align={col.numeric ? 'center' : 'left'}
-                    sx={{ fontWeight: 700, fontSize: '0.75rem', py: 1.25, whiteSpace: 'nowrap', width: col.width ?? 'auto' }}
+                    sx={{
+                      fontWeight: 700, fontSize: '0.75rem', py: 1.25, whiteSpace: 'nowrap', width: col.width ?? 'auto',
+                      ...(colIdx === 0 && { position: 'sticky', left: 0, zIndex: 3, bgcolor: 'background.default' }),
+                    }}
                     sortDirection={orderBy === col.id ? order : false}
                   >
                     <TableSortLabel
@@ -182,7 +185,7 @@ export default function StatsPage() {
                   onClick={() => navigate(`/players/${row.playerId}`)}
                   sx={{ cursor: 'pointer', '&:last-child td': { borderBottom: 0 } }}
                 >
-                  <TableCell sx={{ whiteSpace: 'nowrap', width: 140 }}>
+                  <TableCell sx={{ whiteSpace: 'nowrap', width: 140, position: 'sticky', left: 0, zIndex: 1, bgcolor: 'background.paper' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Typography variant="caption" sx={{ fontFamily: '"Roboto Mono", monospace', color: 'text.secondary', minWidth: 20 }}>
                         #{row.number}
@@ -219,8 +222,8 @@ export default function StatsPage() {
               <Table size="small" sx={{ minWidth: 480 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'background.default' }}>
-                    {['선수명', '경기', 'IP', '피안타', '탈삼진', '볼넷', '실점', 'ERA'].map((label) => (
-                      <TableCell key={label} align={label === '선수명' ? 'left' : 'center'} sx={{ fontWeight: 700, fontSize: '0.75rem', py: 1.25, whiteSpace: 'nowrap', width: label === '선수명' ? 140 : 'auto' }}>
+                    {['선수명', '경기', 'IP', '피안타', '탈삼진', '볼넷', '실점', 'ERA'].map((label, colIdx) => (
+                      <TableCell key={label} align={label === '선수명' ? 'left' : 'center'} sx={{ fontWeight: 700, fontSize: '0.75rem', py: 1.25, whiteSpace: 'nowrap', width: label === '선수명' ? 140 : 'auto', ...(colIdx === 0 && { position: 'sticky', left: 0, zIndex: 3, bgcolor: 'background.default' }) }}>
                         {label}
                       </TableCell>
                     ))}
@@ -229,7 +232,7 @@ export default function StatsPage() {
                 <TableBody>
                   {pitchingStats.filter((r) => r.games > 0).map((row) => (
                     <TableRow key={row.playerId} sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                      <TableCell sx={{ whiteSpace: 'nowrap', width: 140 }}>
+                      <TableCell sx={{ whiteSpace: 'nowrap', width: 140, position: 'sticky', left: 0, zIndex: 1, bgcolor: 'background.paper' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           <Typography variant="caption" sx={{ fontFamily: '"Roboto Mono", monospace', color: 'text.secondary', minWidth: 20 }}>
                             #{row.number}

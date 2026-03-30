@@ -96,16 +96,12 @@ router.get('/', async (req, res, next) => {
       .filter(g => g.status === 'in_progress')
       .map(g => ({ id: g.id, date: g.date, opponent: g.opponent, venue: g.venue, leagueId: g.leagueId || null }));
 
-    // Next scheduled game
+    // Upcoming scheduled games (today or later, sorted ascending)
     const today = new Date().toISOString().slice(0, 10);
-    const nextGame = sortedGames
-      .slice()
+    const upcomingGames = normalizedGames
+      .filter(g => g.status === 'scheduled' && (g.date || '') >= today)
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
-      .find(g => g.status === 'scheduled' && g.date >= today);
-
-    const nextGameData = nextGame
-      ? { id: nextGame.id, date: nextGame.date, opponent: nextGame.opponent, venue: nextGame.venue, leagueId: nextGame.leagueId || null }
-      : null;
+      .map(g => ({ id: g.id, date: g.date, opponent: g.opponent, venue: g.venue, leagueId: g.leagueId || null }));
 
     res.json({
       success: true,
@@ -115,7 +111,7 @@ router.get('/', async (req, res, next) => {
         recentGames,
         teamStats,
         leaders,
-        nextGame: nextGameData
+        upcomingGames
       }
     });
   } catch (err) {

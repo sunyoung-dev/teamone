@@ -223,22 +223,44 @@ function InProgressGamesCard({ games, leagueMap, onGameClick }) {
   );
 }
 
-function NextGameCard({ game, leagueMap }) {
-  if (!game) return null;
+function UpcomingGamesCard({ games, leagueMap, onGameClick }) {
+  if (!games?.length) return null;
   return (
     <Card sx={{ border: '2px solid', borderColor: 'secondary.main' }}>
-      <CardContent sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+      <CardContent sx={{ p: 0 }}>
+        <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
           <CalendarTodayIcon color="secondary" fontSize="small" />
-          <Typography variant="subtitle2" color="secondary" sx={{ fontWeight: 700 }}>다음 경기</Typography>
+          <Typography variant="subtitle2" color="secondary" sx={{ fontWeight: 700 }}>예정 경기</Typography>
+          <Chip label={games.length} size="small" color="secondary" sx={{ height: 18, fontSize: '0.6rem', fontWeight: 700 }} />
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="body1" sx={{ fontWeight: 700 }}>vs {game.opponent}</Typography>
-          {game.leagueId && leagueMap[game.leagueId] && (
-            <Chip label={leagueMap[game.leagueId]} size="small" variant="outlined" color="primary" sx={{ height: 18, fontSize: '0.6rem' }} />
-          )}
-        </Box>
-        <Typography variant="body2" color="text.secondary">{game.date}{game.venue ? ` · ${game.venue}` : ''}</Typography>
+        <Divider />
+        <List dense disablePadding>
+          {games.map((game, idx) => (
+            <React.Fragment key={game.id}>
+              <ListItem
+                sx={{ py: 1.25, px: 2, cursor: onGameClick ? 'pointer' : 'default', '&:hover': onGameClick ? { bgcolor: 'action.hover' } : {} }}
+                onClick={() => onGameClick && onGameClick(game.id)}
+              >
+                <ListItemText
+                  primary={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>vs {game.opponent}</Typography>
+                      {game.leagueId && leagueMap[game.leagueId] && (
+                        <Chip label={leagueMap[game.leagueId]} size="small" variant="outlined" color="primary" sx={{ height: 18, fontSize: '0.6rem' }} />
+                      )}
+                    </Box>
+                  }
+                  secondary={
+                    <Typography variant="caption" color="text.secondary">
+                      {game.date}{game.venue ? ` · ${game.venue}` : ''}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+              {idx < games.length - 1 && <Divider />}
+            </React.Fragment>
+          ))}
+        </List>
       </CardContent>
     </Card>
   );
@@ -281,7 +303,11 @@ export default function DashboardPage() {
           onGameClick={(id) => navigate(`/games/${id}`)}
         />
 
-        {data?.nextGame && <NextGameCard game={data.nextGame} leagueMap={leagueMap} />}
+        <UpcomingGamesCard
+          games={data?.upcomingGames}
+          leagueMap={leagueMap}
+          onGameClick={(id) => navigate(`/games/${id}`)}
+        />
 
         <RecentGamesCard
           games={data?.recentGames}

@@ -280,16 +280,22 @@ router.get('/pitching', async (req, res, next) => {
 
       const pitcherIdsInGame = new Set();
 
+      // Build inning → pitcherId map from pitching records for auto-attribution
+      const inningPitcherMap = {};
       for (const record of (game.pitching || [])) {
         const pid = record.pitcherId;
         if (!pid) continue;
         if (!pitchingByPitcher[pid]) pitchingByPitcher[pid] = [];
         pitchingByPitcher[pid].push(record);
         pitcherIdsInGame.add(pid);
+        for (let inn = record.startInning; inn <= record.endInning; inn++) {
+          inningPitcherMap[inn] = pid;
+        }
       }
 
       for (const oab of (game.opponentAtBats || [])) {
-        const pid = oab.pitcherId;
+        // Use explicit pitcherId; fall back to inning-based attribution
+        const pid = oab.pitcherId || inningPitcherMap[oab.inning];
         if (!pid) continue;
         if (!opponentAtBatsByPitcher[pid]) opponentAtBatsByPitcher[pid] = [];
         opponentAtBatsByPitcher[pid].push(oab);
@@ -305,7 +311,10 @@ router.get('/pitching', async (req, res, next) => {
       const records = pitchingByPitcher[player._id] || [];
       const oabs = opponentAtBatsByPitcher[player._id] || [];
 
-      const ip = records.reduce((sum, r) => sum + (r.endInning - r.startInning + 1), 0);
+      const ip = records.reduce((sum, r) => {
+        const span = (r.endInning || 0) - (r.startInning || 0) + 1;
+        return sum + (span > 0 ? span : 0);
+      }, 0);
       const tbf = oabs.length;
       const h = oabs.filter(oab => ['1H', '2H', '3H', 'HR'].includes(oab.result)).length;
       const hr = oabs.filter(oab => oab.result === 'HR').length;

@@ -1154,14 +1154,24 @@ function PitchingTab({ gameId, players, pitchingRecords, opponentAtBats, onPitch
     }
   };
 
+  // Build inning → pitcherId map from pitching records for auto-attribution
+  const inningPitcherMap = {};
+  pitchingRecords.forEach((rec) => {
+    for (let inn = rec.startInning; inn <= rec.endInning; inn++) {
+      inningPitcherMap[inn] = rec.pitcherId;
+    }
+  });
+
   // Calculate per-pitcher stats from opponentAtBats
+  // Use explicit pitcherId if set, otherwise fall back to inning-based attribution
   const pitcherStatsMap = {};
   opponentAtBats.forEach((ab) => {
-    if (!ab.pitcherId) return;
-    if (!pitcherStatsMap[ab.pitcherId]) {
-      pitcherStatsMap[ab.pitcherId] = { H: 0, K: 0, BB: 0, R: 0 };
+    const pid = ab.pitcherId || inningPitcherMap[ab.inning];
+    if (!pid) return;
+    if (!pitcherStatsMap[pid]) {
+      pitcherStatsMap[pid] = { H: 0, K: 0, BB: 0, R: 0 };
     }
-    const s = pitcherStatsMap[ab.pitcherId];
+    const s = pitcherStatsMap[pid];
     if (['1H', '2H', '3H', 'HR'].includes(ab.result)) s.H += 1;
     if (ab.result === 'SO') s.K += 1;
     if (ab.result === 'BB' || ab.result === 'HBP') s.BB += 1;

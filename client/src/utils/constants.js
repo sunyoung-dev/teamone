@@ -67,10 +67,10 @@ export const THROWING_HAND_MAP = {
 };
 
 export const RESULT_TYPE_COLORS = {
-  hit: { bg: '#e8f5e9', text: '#1b5e20', border: '#4caf50' },
-  out: { bg: '#ffebee', text: '#b71c1c', border: '#ef5350' },
-  onBase: { bg: '#e3f2fd', text: '#0d47a1', border: '#42a5f5' },
-  sacrifice: { bg: '#f5f5f5', text: '#424242', border: '#9e9e9e' },
+  hit: { bg: '#f0fdf4', text: '#1b5e20', border: '#4c8c4a' },
+  out: { bg: '#fff1f2', text: '#b71c1c', border: '#e05252' },
+  onBase: { bg: '#eff6ff', text: '#003c8f', border: '#4f83cc' },
+  sacrifice: { bg: '#f8fafc', text: '#334155', border: '#94a3b8' },
 };
 
 export const GAME_STATUS_MAP = {

@@ -146,8 +146,8 @@ function LeaderCard({ leaders }) {
     <Card>
       <CardContent sx={{ p: 0 }}>
         <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <EmojiEventsIcon sx={{ color: '#f9a825' }} fontSize="small" />
-          <Typography variant="subtitle2" sx={{ color: '#f9a825', fontWeight: 700 }}>타율 리더보드</Typography>
+          <EmojiEventsIcon sx={{ color: '#b45309' }} fontSize="small" />
+          <Typography variant="subtitle2" sx={{ color: '#b45309', fontWeight: 700 }}>타율 리더보드</Typography>
         </Box>
         <Divider />
         <List dense disablePadding>
@@ -157,7 +157,7 @@ function LeaderCard({ leaders }) {
                 <Avatar
                   sx={{
                     width: 28, height: 28, mr: 1.5, fontSize: '0.75rem', fontWeight: 700,
-                    bgcolor: idx === 0 ? '#f9a825' : idx === 1 ? '#9e9e9e' : '#795548',
+                    bgcolor: idx === 0 ? '#b45309' : idx === 1 ? '#475569' : '#78350f',
                   }}
                 >
                   {idx + 1}

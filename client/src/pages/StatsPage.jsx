@@ -66,10 +66,10 @@ function TeamSummary({ stats }) {
             경기수: <strong>{stats.gamesPlayed ?? 0}</strong>
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            승: <strong style={{ color: '#2e7d32' }}>{stats.wins ?? 0}</strong>
+            승: <strong style={{ color: '#1b5e20' }}>{stats.wins ?? 0}</strong>
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            패: <strong style={{ color: '#c62828' }}>{stats.losses ?? 0}</strong>
+            패: <strong style={{ color: '#b71c1c' }}>{stats.losses ?? 0}</strong>
           </Typography>
           <Typography variant="body2" color="text.secondary">
             무: <strong>{stats.draws ?? 0}</strong>

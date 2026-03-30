@@ -4,51 +4,55 @@ const theme = createTheme({
   palette: {
     primary: {
       main: '#0d1b3e',
-      light: '#3a4a7a',
+      light: '#1e3a6e',
       dark: '#000018',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#ff5252',
-      light: '#ff867f',
-      dark: '#c50e29',
+      main: '#1565c0',
+      light: '#4f83cc',
+      dark: '#003c8f',
       contrastText: '#ffffff',
     },
     success: {
-      main: '#2e7d32',
-      light: '#60ad5e',
-      dark: '#005005',
+      main: '#1b5e20',
+      light: '#4c8c4a',
+      dark: '#003300',
+      contrastText: '#ffffff',
     },
     error: {
-      main: '#c62828',
-      light: '#ff5f52',
-      dark: '#8e0000',
+      main: '#b71c1c',
+      light: '#e05252',
+      dark: '#7f0000',
+      contrastText: '#ffffff',
     },
     warning: {
-      main: '#f9a825',
-      light: '#ffd95a',
-      dark: '#c17900',
+      main: '#b45309',
+      light: '#e07c22',
+      dark: '#7c3700',
+      contrastText: '#ffffff',
     },
     info: {
-      main: '#1565c0',
-      light: '#5e92f3',
-      dark: '#003c8f',
+      main: '#0277bd',
+      light: '#58a5f0',
+      dark: '#004c8c',
+      contrastText: '#ffffff',
     },
     background: {
-      default: '#f8f9fa',
+      default: '#eef2f7',
       paper: '#ffffff',
     },
     text: {
-      primary: '#1a1a2e',
-      secondary: '#5c6880',
+      primary: '#0f172a',
+      secondary: '#475569',
     },
     // Custom result type colors
     hit: {
-      main: '#2e7d32',
+      main: '#1b5e20',
       light: '#e8f5e9',
     },
     out: {
-      main: '#c62828',
+      main: '#b71c1c',
       light: '#ffebee',
     },
     onBase: {
@@ -56,8 +60,8 @@ const theme = createTheme({
       light: '#e3f2fd',
     },
     sacrifice: {
-      main: '#616161',
-      light: '#f5f5f5',
+      main: '#546e7a',
+      light: '#eceff1',
     },
   },
   typography: {
@@ -116,7 +120,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 16,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+          boxShadow: '0 2px 12px rgba(13,27,62,0.08)',
         },
       },
     },
@@ -131,14 +135,14 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+          boxShadow: '0 1px 4px rgba(13,27,62,0.2)',
         },
       },
     },
     MuiFab: {
       styleOverrides: {
         root: {
-          boxShadow: '0 4px 16px rgba(255,82,82,0.4)',
+          boxShadow: '0 4px 16px rgba(21,101,192,0.35)',
         },
       },
     },

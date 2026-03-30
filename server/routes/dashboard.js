@@ -99,7 +99,7 @@ router.get('/', async (req, res, next) => {
     // Upcoming scheduled games (today or later, sorted ascending)
     const today = new Date().toISOString().slice(0, 10);
     const upcomingGames = normalizedGames
-      .filter(g => g.status === 'scheduled' && (g.date || '') >= today)
+      .filter(g => ['scheduled', 'in_progress'].includes(g.status) && (g.date || '') >= today)
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
       .map(g => ({ id: g.id, date: g.date, opponent: g.opponent, venue: g.venue, leagueId: g.leagueId || null }));
 

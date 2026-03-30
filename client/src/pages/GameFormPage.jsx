@@ -107,7 +107,7 @@ export default function GameFormPage() {
         ...form,
         innings: Number(form.innings),
         leagueId: form.leagueId || null,
-        status: isEdit ? undefined : 'in_progress',
+        status: isEdit ? undefined : 'scheduled',
         lineup,
       };
 

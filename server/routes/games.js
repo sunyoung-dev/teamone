@@ -265,11 +265,15 @@ router.put('/:id/opponent-lineup', async (req, res, next) => {
     }
 
     // Sync batterName in opponentAtBats when a player's name changes
-    const oldLineup = game.opponentLineup || [];
+    // Match by order (타순) which is stable, not by id which may be absent
+    const oldByOrder = {};
+    for (const e of (game.opponentLineup || [])) {
+      if (e.order != null) oldByOrder[e.order] = e;
+    }
     const nameChanges = {};
     for (const newEntry of lineup) {
-      if (!newEntry.id) continue;
-      const oldEntry = oldLineup.find(e => e.id === newEntry.id);
+      if (newEntry.order == null) continue;
+      const oldEntry = oldByOrder[newEntry.order];
       if (oldEntry && oldEntry.name && oldEntry.name !== newEntry.name) {
         nameChanges[oldEntry.name] = newEntry.name;
       }

@@ -766,8 +766,9 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
   };
 
   const handleSaveEdit = async () => {
+    const targetOrder = editBatter.order;
     const updated = opponentLineup.map((b) =>
-      b.id === editBatter.id
+      b.order === targetOrder
         ? { ...b, order: Number(editOrder) || b.order, name: editName.trim(), number: editNumber.trim(), position: editPosition }
         : b
     ).sort((a, b) => a.order - b.order);

@@ -340,7 +340,7 @@ export default function DashboardPage() {
         <TournamentProgressCard tournaments={data?.activeTournaments} />
 
         <UpcomingGamesCard
-          games={(data?.upcomingGames || []).slice(0, 2)}
+          games={(data?.upcomingGames || []).slice(0, 2).reverse()}
           leagueMap={leagueMap}
           onGameClick={(id) => navigate(`/games/${id}`)}
         />

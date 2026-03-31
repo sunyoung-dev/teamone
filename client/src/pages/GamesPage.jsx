@@ -19,7 +19,7 @@ function GameCard({ game, leagueName, onClick }) {
   const today = new Date().toISOString().slice(0, 10);
   const isInProgress = game.status === 'in_progress';
   const isLive = isInProgress && game.date === today;
-  const isUpcoming = isInProgress && game.date !== today;
+  const isUpcoming = (isInProgress && game.date !== today) || (game.status === 'scheduled' && (game.date || '') >= today);
   return (
     <Card
       sx={{

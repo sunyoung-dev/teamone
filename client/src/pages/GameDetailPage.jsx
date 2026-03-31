@@ -64,10 +64,13 @@ function GameInfoCard({ game, ourScore, leagueName }) {
     <Card sx={{ mb: 2 }}>
       <CardContent sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>vs {game.opponent}</Typography>
             {leagueName && (
               <Chip label={leagueName} size="small" variant="outlined" color="primary" sx={{ height: 20, fontSize: '0.65rem' }} />
+            )}
+            {game.round && (
+              <Chip label={game.round} size="small" color="warning" sx={{ height: 20, fontSize: '0.65rem' }} />
             )}
           </Box>
           <ScoreChip result={game.result} size="medium" />

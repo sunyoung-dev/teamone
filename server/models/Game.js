@@ -68,6 +68,7 @@ const gameSchema = new mongoose.Schema({
   innings: { type: Number, default: 7 },
   status: { type: String, default: 'scheduled' },
   leagueId: { type: String, default: null },
+  round: { type: String, default: '' },
   lineup: [lineupEntrySchema],
   opponentLineup: [opponentLineupEntrySchema],
   atBats: [atBatSchema],

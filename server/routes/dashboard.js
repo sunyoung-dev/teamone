@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Player = require('../models/Player');
 const Game = require('../models/Game');
+const League = require('../models/League');
 const { calculateStats } = require('./stats');
 
 function round3(n) {
@@ -11,10 +12,13 @@ function round3(n) {
 // GET /api/dashboard
 router.get('/', async (req, res, next) => {
   try {
-    const [players, games] = await Promise.all([
+    const [players, games, leagues] = await Promise.all([
       Player.find({ active: true }).lean(),
-      Game.find().lean()
+      Game.find().lean(),
+      League.find().lean(),
     ]);
+
+    const leagueInfoMap = Object.fromEntries(leagues.map(l => [String(l._id), l]));
 
     // lean() returns plain objects with _id, map to id
     const normGame = g => ({ ...g, id: g._id });
@@ -101,7 +105,36 @@ router.get('/', async (req, res, next) => {
     const upcomingGames = normalizedGames
       .filter(g => ['scheduled', 'in_progress'].includes(g.status) && (g.date || '') >= today)
       .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
-      .map(g => ({ id: g.id, date: g.date, opponent: g.opponent, venue: g.venue, leagueId: g.leagueId || null }));
+      .map(g => ({ id: g.id, date: g.date, opponent: g.opponent, venue: g.venue, leagueId: g.leagueId || null, round: g.round || null }));
+
+    // Active tournaments: group tournament games by league, show recent/upcoming
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const tournamentLeagues = leagues.filter(l => l.format === 'tournament');
+    const activeTournaments = tournamentLeagues.map(league => {
+      const lid = String(league._id);
+      const tGames = normalizedGames
+        .filter(g => g.leagueId === lid)
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      if (tGames.length === 0) return null;
+      const hasActivity = tGames.some(g => (g.date || '') >= thirtyDaysAgo);
+      if (!hasActivity) return null;
+
+      const playedGames = tGames.filter(g => g.status === 'final');
+      const upcomingT = tGames.filter(g => ['scheduled', 'in_progress'].includes(g.status) && (g.date || '') >= today);
+      const playedRounds = [...new Set(playedGames.map(g => g.round).filter(Boolean))];
+      const w = playedGames.filter(g => g.result === 'W').length;
+      const l = playedGames.filter(g => g.result === 'L').length;
+      const nextT = upcomingT[0] || null;
+
+      return {
+        leagueId: lid,
+        name: league.name,
+        rounds: league.rounds || [],
+        playedRounds,
+        record: { wins: w, losses: l },
+        nextGame: nextT ? { id: nextT.id, round: nextT.round, date: nextT.date, opponent: nextT.opponent } : null,
+      };
+    }).filter(Boolean);
 
     res.json({
       success: true,
@@ -111,7 +144,8 @@ router.get('/', async (req, res, next) => {
         recentGames,
         teamStats,
         leaders,
-        upcomingGames
+        upcomingGames,
+        activeTournaments,
       }
     });
   } catch (err) {

@@ -63,7 +63,7 @@ router.get('/:id', async (req, res, next) => {
 // POST /api/games
 router.post('/', async (req, res, next) => {
   try {
-    const { date, opponent, venue, result, scoreOurs, scoreTheirs, innings, status, lineup, leagueId } = req.body;
+    const { date, opponent, venue, result, scoreOurs, scoreTheirs, innings, status, lineup, leagueId, round } = req.body;
 
     if (!date || !opponent) {
       return res.status(400).json({
@@ -102,6 +102,7 @@ router.post('/', async (req, res, next) => {
       innings: innings !== undefined ? Number(innings) : 7,
       status: status || 'scheduled',
       leagueId: leagueId || null,
+      round: round ? String(round) : '',
       lineup: lineup && Array.isArray(lineup) ? lineup : [],
       atBats: [],
     });
@@ -124,7 +125,7 @@ router.put('/:id', async (req, res, next) => {
       });
     }
 
-    const { date, opponent, venue, result, scoreOurs, scoreTheirs, innings, status, lineup, leagueId } = req.body;
+    const { date, opponent, venue, result, scoreOurs, scoreTheirs, innings, status, lineup, leagueId, round } = req.body;
 
     if (status && !VALID_STATUSES.includes(status)) {
       return res.status(400).json({
@@ -154,6 +155,7 @@ router.put('/:id', async (req, res, next) => {
     if (innings !== undefined) game.innings = Number(innings);
     if (status !== undefined) game.status = status;
     if (leagueId !== undefined) game.leagueId = leagueId || null;
+    if (round !== undefined) game.round = round ? String(round) : '';
     if (lineup !== undefined) game.lineup = lineup;
 
     await game.save();

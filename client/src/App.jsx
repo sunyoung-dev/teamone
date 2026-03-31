@@ -30,7 +30,7 @@ const NAV_TABS = [
   { label: '경기', icon: <SportsBaseballIcon />, path: '/games' },
   { label: '선수', icon: <PeopleIcon />, path: '/players' },
   { label: '통계', icon: <BarChartIcon />, path: '/stats' },
-  { label: '리그', icon: <EmojiEventsIcon />, path: '/leagues' },
+  { label: '대회', icon: <EmojiEventsIcon />, path: '/leagues' },
 ];
 
 const PAGE_TITLES = {
@@ -40,7 +40,7 @@ const PAGE_TITLES = {
   '/players': '선수 목록',
   '/players/new': '선수 등록',
   '/stats': '팀 통계',
-  '/leagues': '리그 관리',
+  '/leagues': '대회 관리',
 };
 
 function getNavValue(pathname) {
@@ -62,7 +62,7 @@ function getTitle(pathname) {
 }
 
 function isRootPage(pathname) {
-  return ['/', '/games', '/players', '/stats'].includes(pathname);
+  return ['/', '/games', '/players', '/stats', '/leagues'].includes(pathname);
 }
 
 function AppLayout() {

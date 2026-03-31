@@ -4,6 +4,8 @@ const leagueSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   name: { type: String, required: true },
   season: { type: String, required: true },
+  format: { type: String, enum: ['league', 'tournament'], default: 'league' },
+  rounds: [{ type: String }],
   organizer: { type: String, default: '' },
   description: { type: String, default: '' },
   startDate: { type: String, default: '' },

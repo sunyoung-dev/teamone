@@ -34,6 +34,7 @@ const EMPTY_FORM = {
   venue: '',
   innings: 7,
   leagueId: '',
+  round: '',
 };
 
 export default function GameFormPage() {
@@ -65,6 +66,7 @@ export default function GameFormPage() {
             venue: g.venue || '',
             innings: g.innings || 7,
             leagueId: g.leagueId || '',
+            round: g.round || '',
           });
           setLineup(g.lineup || []);
         }
@@ -107,6 +109,7 @@ export default function GameFormPage() {
         ...form,
         innings: Number(form.innings),
         leagueId: form.leagueId || null,
+        round: form.round || '',
         status: isEdit ? undefined : 'scheduled',
         lineup,
       };
@@ -171,15 +174,32 @@ export default function GameFormPage() {
             </Grid>
             <Grid item xs={12}>
               <FormControl fullWidth size="small">
-                <InputLabel>리그</InputLabel>
-                <Select value={form.leagueId} onChange={handleChange('leagueId')} label="리그">
-                  <MenuItem value="">리그 없음 (자체경기)</MenuItem>
+                <InputLabel>대회</InputLabel>
+                <Select value={form.leagueId} onChange={(e) => setForm(p => ({ ...p, leagueId: e.target.value, round: '' }))} label="대회">
+                  <MenuItem value="">대회 없음 (자체경기)</MenuItem>
                   {leagues.map(l => (
                     <MenuItem key={l.id} value={l.id}>{l.name} ({l.season})</MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Grid>
+            {(() => {
+              const selectedComp = leagues.find(l => l.id === form.leagueId);
+              if (!selectedComp || selectedComp.format !== 'tournament' || !selectedComp.rounds?.length) return null;
+              return (
+                <Grid item xs={12}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>라운드</InputLabel>
+                    <Select value={form.round} onChange={handleChange('round')} label="라운드">
+                      <MenuItem value="">라운드 미정</MenuItem>
+                      {selectedComp.rounds.map(r => (
+                        <MenuItem key={r} value={r}>{r}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              );
+            })()}
             <Grid item xs={12}>
               <TextField
                 label="이닝 수"

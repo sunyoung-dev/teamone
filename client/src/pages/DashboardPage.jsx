@@ -223,6 +223,46 @@ function InProgressGamesCard({ games, leagueMap, onGameClick }) {
   );
 }
 
+function TournamentProgressCard({ tournaments }) {
+  if (!tournaments?.length) return null;
+  return (
+    <Card sx={{ border: '2px solid', borderColor: 'warning.main' }}>
+      <CardContent sx={{ p: 0 }}>
+        <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <EmojiEventsIcon sx={{ color: '#b45309' }} fontSize="small" />
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#b45309' }}>전국대회 진행 현황</Typography>
+        </Box>
+        <Divider />
+        <List dense disablePadding>
+          {tournaments.map((t, idx) => (
+            <React.Fragment key={t.leagueId}>
+              <ListItem sx={{ py: 1.25, px: 2, flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t.leagueName}</Typography>
+                  <Chip label={t.season} size="small" color="primary" sx={{ height: 18, fontSize: '0.6rem', fontWeight: 700 }} />
+                </Box>
+                {t.playedRounds.length > 0 && (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.5 }}>
+                    {t.playedRounds.map((r) => (
+                      <Chip key={r} label={r} size="small" variant="outlined" color="success" sx={{ height: 18, fontSize: '0.6rem' }} />
+                    ))}
+                  </Box>
+                )}
+                {t.nextGame && (
+                  <Typography variant="caption" color="text.secondary">
+                    다음: {t.nextGame.round ? `${t.nextGame.round} · ` : ''}{t.nextGame.date} vs {t.nextGame.opponent}
+                  </Typography>
+                )}
+              </ListItem>
+              {idx < tournaments.length - 1 && <Divider />}
+            </React.Fragment>
+          ))}
+        </List>
+      </CardContent>
+    </Card>
+  );
+}
+
 function UpcomingGamesCard({ games, leagueMap, onGameClick }) {
   if (!games?.length) return null;
   return (
@@ -296,6 +336,8 @@ export default function DashboardPage() {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <RecordCard record={data?.teamRecord} />
+
+        <TournamentProgressCard tournaments={data?.activeTournaments} />
 
         <UpcomingGamesCard
           games={(data?.upcomingGames || []).slice(0, 2)}

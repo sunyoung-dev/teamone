@@ -1121,7 +1121,7 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
 
 // ─── PitchingTab ──────────────────────────────────────────────────────────────
 
-function PitchingTab({ gameId, players, pitchingRecords, opponentAtBats, onPitchingAdded, onPitchingDeleted }) {
+function PitchingTab({ gameId, game, players, pitchingRecords, opponentAtBats, onPitchingAdded, onPitchingDeleted }) {
   const [pitcherId, setPitcherId] = useState('');
   const [startInning, setStartInning] = useState(1);
   const [endInning, setEndInning] = useState(1);
@@ -1169,11 +1169,17 @@ function PitchingTab({ gameId, players, pitchingRecords, opponentAtBats, onPitch
     }
   });
 
+  // Lineup pitcher fallback: when no pitching records, attribute to P-position player
+  const lineupPitcherId = pitchingRecords.length === 0
+    ? ((game?.lineup || []).find((e) => e.position === 'P')?.playerId || null)
+    : null;
+
   // Calculate per-pitcher stats from opponentAtBats
-  // Use explicit pitcherId if set, otherwise fall back to inning-based attribution
   const pitcherStatsMap = {};
   opponentAtBats.forEach((ab) => {
-    const pid = ab.pitcherId || inningPitcherMap[ab.inning];
+    const rawId = ab.pitcherId;
+    const explicitId = (rawId && rawId !== 'undefined' && rawId !== 'null') ? rawId : '';
+    const pid = explicitId || inningPitcherMap[ab.inning] || lineupPitcherId;
     if (!pid) return;
     if (!pitcherStatsMap[pid]) {
       pitcherStatsMap[pid] = { H: 0, K: 0, BB: 0, R: 0 };
@@ -1558,6 +1564,7 @@ export default function GameDetailPage() {
       {tab === 3 && (
         <PitchingTab
           gameId={id}
+          game={game}
           players={players}
           pitchingRecords={pitchingRecords}
           opponentAtBats={opponentAtBats}

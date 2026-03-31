@@ -293,9 +293,17 @@ router.get('/pitching', async (req, res, next) => {
         }
       }
 
+      // Lineup pitcher fallback: when no pitching records exist, attribute to P-position player
+      const lineupPitcherId = (game.pitching || []).length === 0
+        ? ((game.lineup || []).find(e => e.position === 'P')?.playerId || null)
+        : null;
+
       for (const oab of (game.opponentAtBats || [])) {
-        // Use explicit pitcherId; fall back to inning-based attribution
-        const pid = oab.pitcherId || inningPitcherMap[oab.inning];
+        // Treat legacy "undefined"/"null" string values as empty
+        const rawId = oab.pitcherId;
+        const explicitId = (rawId && rawId !== 'undefined' && rawId !== 'null') ? rawId : '';
+        // Use explicit pitcherId → inning-based → lineup pitcher fallback
+        const pid = explicitId || inningPitcherMap[oab.inning] || lineupPitcherId;
         if (!pid) continue;
         if (!opponentAtBatsByPitcher[pid]) opponentAtBatsByPitcher[pid] = [];
         opponentAtBatsByPitcher[pid].push(oab);

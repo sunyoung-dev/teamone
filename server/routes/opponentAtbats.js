@@ -64,7 +64,7 @@ router.post('/', async (req, res, next) => {
       result: String(result),
       rbi: rbi !== undefined ? Number(rbi) : 0,
       run: run !== undefined ? Number(run) : 0,
-      pitcherId: String(pitcherId),
+      pitcherId: pitcherId != null && pitcherId !== '' ? String(pitcherId) : '',
       note: note !== undefined ? String(note) : '',
     };
 
@@ -109,7 +109,7 @@ router.put('/:id', async (req, res, next) => {
     if (result !== undefined) oab.result = String(result);
     if (rbi !== undefined) oab.rbi = Number(rbi);
     if (run !== undefined) oab.run = Number(run);
-    if (pitcherId !== undefined) oab.pitcherId = String(pitcherId);
+    if (pitcherId !== undefined) oab.pitcherId = pitcherId != null && pitcherId !== '' ? String(pitcherId) : '';
     if (note !== undefined) oab.note = String(note);
 
     await game.save();

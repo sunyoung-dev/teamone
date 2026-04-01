@@ -233,31 +233,64 @@ function TournamentProgressCard({ tournaments }) {
           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#b45309' }}>전국대회 진행 현황</Typography>
         </Box>
         <Divider />
-        <List dense disablePadding>
-          {tournaments.map((t, idx) => (
-            <React.Fragment key={t.leagueId}>
-              <ListItem sx={{ py: 1.25, px: 2, flexDirection: 'column', alignItems: 'flex-start' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t.leagueName}</Typography>
+        {tournaments.map((t, idx) => (
+          <React.Fragment key={t.leagueId}>
+            <Box sx={{ px: 2, py: 1.5 }}>
+              {/* 대회명 + 시즌 */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.25, flexWrap: 'wrap' }}>
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>{t.leagueName}</Typography>
+                {t.season && (
                   <Chip label={t.season} size="small" color="primary" sx={{ height: 18, fontSize: '0.6rem', fontWeight: 700 }} />
+                )}
+              </Box>
+
+              {/* 라운드 진행 상황 */}
+              {t.rounds.length > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', mb: t.nextGame ? 1 : 0 }}>
+                  {t.rounds.map((round, rIdx) => {
+                    const done = t.playedRounds.includes(round);
+                    const isNext = !done && t.nextGame?.round === round;
+                    return (
+                      <React.Fragment key={round}>
+                        <Chip
+                          label={round}
+                          size="small"
+                          variant={done ? 'filled' : 'outlined'}
+                          sx={{
+                            height: 22,
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            bgcolor: done ? '#1b5e20' : 'transparent',
+                            color: done ? '#fff' : isNext ? '#b45309' : 'text.disabled',
+                            borderColor: done ? '#1b5e20' : isNext ? '#b45309' : 'divider',
+                          }}
+                        />
+                        {rIdx < t.rounds.length - 1 && (
+                          <Typography variant="caption" sx={{ color: 'text.disabled', mx: 0.25 }}>›</Typography>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </Box>
-                {t.playedRounds.length > 0 && (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.5 }}>
-                    {t.playedRounds.map((r) => (
-                      <Chip key={r} label={r} size="small" variant="outlined" color="success" sx={{ height: 18, fontSize: '0.6rem' }} />
-                    ))}
-                  </Box>
-                )}
-                {t.nextGame && (
+              )}
+
+              {/* 다음 경기 */}
+              {t.nextGame && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: '#b45309', fontWeight: 700 }}>다음 경기</Typography>
                   <Typography variant="caption" color="text.secondary">
-                    다음: {t.nextGame.round ? `${t.nextGame.round} · ` : ''}{t.nextGame.date} vs {t.nextGame.opponent}
+                    {t.nextGame.date} · vs {t.nextGame.opponent}
+                    {t.nextGame.round ? ` (${t.nextGame.round})` : ''}
                   </Typography>
-                )}
-              </ListItem>
-              {idx < tournaments.length - 1 && <Divider />}
-            </React.Fragment>
-          ))}
-        </List>
+                </Box>
+              )}
+              {!t.nextGame && t.playedRounds.length === 0 && (
+                <Typography variant="caption" color="text.disabled">경기 일정을 등록하면 진행 상황이 표시됩니다</Typography>
+              )}
+            </Box>
+            {idx < tournaments.length - 1 && <Divider />}
+          </React.Fragment>
+        ))}
       </CardContent>
     </Card>
   );

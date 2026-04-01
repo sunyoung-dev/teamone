@@ -128,7 +128,8 @@ router.get('/', async (req, res, next) => {
 
       return {
         leagueId: lid,
-        name: league.name,
+        leagueName: league.name,
+        season: league.season || '',
         rounds: league.rounds || [],
         playedRounds,
         record: { wins: w, losses: l },

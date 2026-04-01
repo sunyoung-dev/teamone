@@ -99,24 +99,25 @@ router.put('/:id', async (req, res, next) => {
 // DELETE /api/games/:gameId/pitching/:id
 router.delete('/:id', async (req, res, next) => {
   try {
-    const game = await Game.findById(req.params.gameId);
-    if (!game) {
+    const gameExists = await Game.exists({ _id: req.params.gameId });
+    if (!gameExists) {
       return res.status(404).json({
         success: false,
         error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다', details: { id: req.params.gameId } },
       });
     }
 
-    const idx = game.pitching.findIndex(p => p.id === req.params.id);
-    if (idx === -1) {
+    const result = await Game.updateOne(
+      { _id: req.params.gameId },
+      { $pull: { pitching: { id: req.params.id } } }
+    );
+    if (result.modifiedCount === 0) {
       return res.status(404).json({
         success: false,
         error: { code: 'PITCHING_NOT_FOUND', message: '투구 기록을 찾을 수 없습니다', details: { id: req.params.id } },
       });
     }
 
-    game.pitching.splice(idx, 1);
-    await game.save();
     res.json({ success: true, data: null });
   } catch (err) {
     next(err);

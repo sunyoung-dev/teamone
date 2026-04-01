@@ -122,24 +122,25 @@ router.put('/:id', async (req, res, next) => {
 // DELETE /api/games/:gameId/opponent-atbats/:id
 router.delete('/:id', async (req, res, next) => {
   try {
-    const game = await Game.findById(req.params.gameId);
-    if (!game) {
+    const gameExists = await Game.exists({ _id: req.params.gameId });
+    if (!gameExists) {
       return res.status(404).json({
         success: false,
         error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다', details: { id: req.params.gameId } },
       });
     }
 
-    const idx = game.opponentAtBats.findIndex(o => o.id === req.params.id);
-    if (idx === -1) {
+    const result = await Game.updateOne(
+      { _id: req.params.gameId },
+      { $pull: { opponentAtBats: { id: req.params.id } } }
+    );
+    if (result.modifiedCount === 0) {
       return res.status(404).json({
         success: false,
         error: { code: 'OPPONENT_ATBAT_NOT_FOUND', message: '상대 타석 기록을 찾을 수 없습니다', details: { id: req.params.id } },
       });
     }
 
-    game.opponentAtBats.splice(idx, 1);
-    await game.save();
     res.json({ success: true, data: null });
   } catch (err) {
     next(err);

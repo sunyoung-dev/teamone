@@ -542,7 +542,7 @@ function AtBatsTab({ gameId, game, players, atBats, substitutions, onAtBatAdded,
     const newAtBat = { inning, playerId: selectedPlayerId, result, order: nextOrder, rbi: rbi || 0, run: run || 0, note: note || '' };
     try {
       const res = await addAtBat(gameId, newAtBat);
-      onAtBatAdded(res.atBat || { ...newAtBat, id: Date.now().toString() });
+      onAtBatAdded(res.data || { ...newAtBat, id: Date.now().toString() });
     } catch (e) {
       console.error(e);
     }
@@ -790,7 +790,7 @@ function OpponentTab({ gameId, game, players, opponentAtBats, substitutions, onO
       inning,
       batterName: selectedBatter.name,
       result,
-      batterOrder: nextOrder,
+      batterOrder: selectedBatter.order,
       rbi: rbi || 0,
       run: run || 0,
       note: note || '',

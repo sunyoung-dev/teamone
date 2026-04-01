@@ -1141,7 +1141,7 @@ function PitchingTab({ gameId, game, players, pitchingRecords, opponentAtBats, o
     };
     try {
       const res = await addPitching(gameId, newRecord);
-      onPitchingAdded(res.record || { ...newRecord, id: Date.now().toString() });
+      onPitchingAdded(res.data || { ...newRecord, id: Date.now().toString() });
       setPitcherId('');
       setStartInning(1);
       setEndInning(1);

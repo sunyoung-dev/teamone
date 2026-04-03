@@ -10,7 +10,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -42,7 +41,6 @@ export default function GameDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [endGameOpen, setEndGameOpen] = useState(false);
-  const [theirScore, setTheirScore] = useState('');
   const [endingSaving, setEndingSaving] = useState(false);
 
   useEffect(() => {
@@ -75,16 +73,15 @@ export default function GameDetailPage() {
   }, [id]);
 
   const ourScore = atBats.reduce((sum, ab) => sum + (ab.run || 0), 0);
+  const theirScore = opponentAtBats.reduce((sum, ab) => sum + (ab.run || 0), 0);
 
   const handleEndGame = async () => {
-    const scoreTheirs = Number(theirScore) || 0;
-    const result = ourScore > scoreTheirs ? 'W' : ourScore < scoreTheirs ? 'L' : 'D';
+    const result = ourScore > theirScore ? 'W' : ourScore < theirScore ? 'L' : 'D';
     setEndingSaving(true);
     try {
-      const res = await updateGame(id, { status: 'final', scoreOurs: ourScore, scoreTheirs, result });
+      const res = await updateGame(id, { status: 'final', scoreOurs: ourScore, scoreTheirs: theirScore, result });
       setGame(res.data || res);
       setEndGameOpen(false);
-      setTheirScore('');
     } catch (e) {
       console.error(e);
     }
@@ -137,7 +134,7 @@ export default function GameDetailPage() {
         <DialogContent>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Box sx={{ textAlign: 'center', flex: 1 }}>
-              <Typography variant="caption" color="text.secondary">우리팀 (자동 계산)</Typography>
+              <Typography variant="caption" color="text.secondary">우리팀</Typography>
               <Typography sx={{ fontFamily: '"Roboto Mono", monospace', fontWeight: 800, fontSize: '2rem', color: 'primary.main' }}>
                 {ourScore}
               </Typography>
@@ -145,28 +142,23 @@ export default function GameDetailPage() {
             <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.secondary' }}>:</Typography>
             <Box sx={{ textAlign: 'center', flex: 1 }}>
               <Typography variant="caption" color="text.secondary">{game.opponent}</Typography>
-              <TextField
-                type="number"
-                value={theirScore}
-                onChange={(e) => setTheirScore(e.target.value)}
-                inputProps={{ min: 0, style: { textAlign: 'center', fontSize: '2rem', fontWeight: 800, fontFamily: 'Roboto Mono, monospace', padding: '4px 8px' } }}
-                sx={{ mt: 0.5 }}
-                placeholder="0"
-                autoFocus
-              />
+              <Typography sx={{ fontFamily: '"Roboto Mono", monospace', fontWeight: 800, fontSize: '2rem', color: 'error.main' }}>
+                {theirScore}
+              </Typography>
             </Box>
           </Box>
-          {theirScore !== '' && (
-            <Chip
-              label={ourScore > Number(theirScore) ? '승리 🎉' : ourScore < Number(theirScore) ? '패배' : '무승부'}
-              color={ourScore > Number(theirScore) ? 'success' : ourScore < Number(theirScore) ? 'error' : 'default'}
-              sx={{ width: '100%', fontWeight: 700, fontSize: '1rem', height: 40 }}
-            />
-          )}
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mb: 1.5 }}>
+            타석 기록의 득점 합산으로 자동 계산됩니다
+          </Typography>
+          <Chip
+            label={ourScore > theirScore ? '승리 🎉' : ourScore < theirScore ? '패배' : '무승부'}
+            color={ourScore > theirScore ? 'success' : ourScore < theirScore ? 'error' : 'default'}
+            sx={{ width: '100%', fontWeight: 700, fontSize: '1rem', height: 40 }}
+          />
         </DialogContent>
         <DialogActions sx={{ px: 2, pb: 2, gap: 1 }}>
           <Button onClick={() => setEndGameOpen(false)} variant="outlined" sx={{ flex: 1 }}>취소</Button>
-          <Button onClick={handleEndGame} variant="contained" disabled={theirScore === '' || endingSaving} sx={{ flex: 2 }}>
+          <Button onClick={handleEndGame} variant="contained" disabled={endingSaving} sx={{ flex: 2 }}>
             {endingSaving ? '저장 중...' : '경기 종료 확정'}
           </Button>
         </DialogActions>

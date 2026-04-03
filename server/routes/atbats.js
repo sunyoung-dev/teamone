@@ -47,7 +47,7 @@ router.post('/', async (req, res, next) => {
       });
     }
 
-    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches } = req.body;
+    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches, runnerEvents } = req.body;
     if (!inning || !playerId || !result || !order) {
       return res.status(400).json({
         success: false,
@@ -74,6 +74,7 @@ router.post('/', async (req, res, next) => {
       strikes: strikes != null ? Number(strikes) : null,
       fouls:   fouls !== undefined ? Number(fouls) : 0,
       pitches: pitches != null ? Number(pitches) : null,
+      runnerEvents: Array.isArray(runnerEvents) ? runnerEvents : [],
     };
 
     game.atBats.push(newAtBat);
@@ -104,7 +105,7 @@ router.put('/:atbatId', async (req, res, next) => {
       });
     }
 
-    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches } = req.body;
+    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches, runnerEvents } = req.body;
     if (result !== undefined && !VALID_RESULTS.includes(result)) {
       return res.status(400).json({
         success: false,
@@ -123,6 +124,7 @@ router.put('/:atbatId', async (req, res, next) => {
     if (strikes !== undefined) ab.strikes = strikes != null ? Number(strikes) : null;
     if (fouls !== undefined) ab.fouls = Number(fouls);
     if (pitches !== undefined) ab.pitches = pitches != null ? Number(pitches) : null;
+    if (runnerEvents !== undefined) ab.runnerEvents = Array.isArray(runnerEvents) ? runnerEvents : [];
 
     await game.save();
     res.json({ success: true, data: ab });

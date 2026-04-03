@@ -204,6 +204,7 @@ export default function GameDetailPage() {
           substitutions={substitutions}
           onAtBatAdded={(ab) => setAtBats((prev) => [...prev, ab])}
           onAtBatDeleted={(abId) => setAtBats((prev) => prev.filter((ab) => ab.id !== abId))}
+          onAtBatUpdated={(ab) => setAtBats((prev) => prev.map((a) => a.id === ab.id ? ab : a))}
         />
       )}
 

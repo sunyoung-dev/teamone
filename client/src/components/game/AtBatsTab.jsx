@@ -9,8 +9,10 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import { addAtBat, deleteAtBat } from '../../api.js';
 import AtBatPicker from '../AtBatPicker.jsx';
+import RunnerEventDialog, { BASE_LABELS } from './RunnerEventDialog.jsx';
 import { RESULT_CODES, RESULT_TYPE_COLORS } from '../../utils/constants.js';
 import { getEffectiveLineup } from '../../utils/lineup.js';
 
@@ -69,16 +71,49 @@ function BallCountBadge({ balls, strikes, fouls, pitches, result }) {
   );
 }
 
-function AtBatRow({ atBat, player, onDelete }) {
+function RunnerEventsBadge({ events }) {
+  if (!events?.length) return null;
+  return (
+    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
+      {events.map((ev, i) => (
+        <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+          <DirectionsRunIcon sx={{ fontSize: 11, color: 'text.disabled' }} />
+          <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+            {ev.runnerName}
+          </Typography>
+          <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled' }}>
+            {BASE_LABELS[ev.fromBase]}→
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: '0.65rem', fontWeight: 700,
+              color: ev.toBase === 4 ? 'success.main' : ev.toBase === 0 ? 'error.main' : 'text.secondary',
+            }}
+          >
+            {BASE_LABELS[ev.toBase]}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
+function AtBatRow({ atBat, player, onDelete, onRunnerEdit }) {
   const info = RESULT_CODES[atBat.result];
   const colors = RESULT_TYPE_COLORS[info?.type] || RESULT_TYPE_COLORS.sacrifice;
   return (
     <ListItem
       sx={{ py: 1, px: 2 }}
       secondaryAction={
-        <IconButton size="small" onClick={() => onDelete(atBat.id)} aria-label="삭제" color="error">
-          <DeleteIcon fontSize="small" />
-        </IconButton>
+        <Box sx={{ display: 'flex', gap: 0.25 }}>
+          <IconButton size="small" onClick={() => onRunnerEdit(atBat)} aria-label="주루 기록" color="primary">
+            <DirectionsRunIcon fontSize="small" />
+          </IconButton>
+          <IconButton size="small" onClick={() => onDelete(atBat.id)} aria-label="삭제" color="error">
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
       }
     >
       <Box
@@ -106,6 +141,7 @@ function AtBatRow({ atBat, player, onDelete }) {
               fouls={atBat.fouls} pitches={atBat.pitches}
               result={atBat.result}
             />
+            <RunnerEventsBadge events={atBat.runnerEvents} />
           </Box>
         }
       />
@@ -113,10 +149,11 @@ function AtBatRow({ atBat, player, onDelete }) {
   );
 }
 
-export default function AtBatsTab({ gameId, game, players, atBats, substitutions, onAtBatAdded, onAtBatDeleted }) {
+export default function AtBatsTab({ gameId, game, players, atBats, substitutions, onAtBatAdded, onAtBatDeleted, onAtBatUpdated }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedInning, setSelectedInning] = useState(1);
   const [selectedPlayerId, setSelectedPlayerId] = useState('');
+  const [runnerDialogAtBat, setRunnerDialogAtBat] = useState(null);
 
   const playerMap = Object.fromEntries((players || []).map((p) => [p.id, p]));
   const maxInning = game?.innings || 9;
@@ -272,7 +309,12 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
         <List dense disablePadding>
           {inningAtBats.map((ab, idx) => (
             <React.Fragment key={ab.id || idx}>
-              <AtBatRow atBat={ab} player={playerMap[ab.playerId]} onDelete={handleDelete} />
+              <AtBatRow
+                atBat={ab}
+                player={playerMap[ab.playerId]}
+                onDelete={handleDelete}
+                onRunnerEdit={setRunnerDialogAtBat}
+              />
               {idx < inningAtBats.length - 1 && <Divider />}
             </React.Fragment>
           ))}
@@ -286,6 +328,18 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
         playerName={playerMap[selectedPlayerId]?.name}
         inning={selectedInning}
         maxInning={maxInning}
+      />
+
+      <RunnerEventDialog
+        open={!!runnerDialogAtBat}
+        onClose={() => setRunnerDialogAtBat(null)}
+        atBat={runnerDialogAtBat}
+        gameId={gameId}
+        players={players}
+        onSaved={(updated) => {
+          onAtBatUpdated?.(updated);
+          setRunnerDialogAtBat(null);
+        }}
       />
     </Box>
   );

@@ -47,7 +47,7 @@ router.post('/', async (req, res, next) => {
       });
     }
 
-    const { inning, playerId, result, order, run, rbi, note } = req.body;
+    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches, runnerEvents } = req.body;
     if (!inning || !playerId || !result || !order) {
       return res.status(400).json({
         success: false,
@@ -70,6 +70,11 @@ router.post('/', async (req, res, next) => {
       run: run !== undefined ? Number(run) : 0,
       rbi: rbi !== undefined ? Number(rbi) : 0,
       note: note !== undefined ? String(note) : '',
+      balls:   balls != null ? Number(balls) : null,
+      strikes: strikes != null ? Number(strikes) : null,
+      fouls:   fouls !== undefined ? Number(fouls) : 0,
+      pitches: pitches != null ? Number(pitches) : null,
+      runnerEvents: Array.isArray(runnerEvents) ? runnerEvents : [],
     };
 
     game.atBats.push(newAtBat);
@@ -100,7 +105,7 @@ router.put('/:atbatId', async (req, res, next) => {
       });
     }
 
-    const { inning, playerId, result, order, run, rbi, note } = req.body;
+    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches, runnerEvents } = req.body;
     if (result !== undefined && !VALID_RESULTS.includes(result)) {
       return res.status(400).json({
         success: false,
@@ -108,15 +113,27 @@ router.put('/:atbatId', async (req, res, next) => {
       });
     }
 
-    if (inning !== undefined) ab.inning = Number(inning);
-    if (playerId !== undefined) ab.playerId = String(playerId);
-    if (result !== undefined) ab.result = String(result);
-    if (order !== undefined) ab.order = Number(order);
-    if (run !== undefined) ab.run = Number(run);
-    if (rbi !== undefined) ab.rbi = Number(rbi);
-    if (note !== undefined) ab.note = String(note);
+    const $set = {};
+    if (inning !== undefined) { ab.inning = Number(inning); $set['atBats.$.inning'] = ab.inning; }
+    if (playerId !== undefined) { ab.playerId = String(playerId); $set['atBats.$.playerId'] = ab.playerId; }
+    if (result !== undefined) { ab.result = String(result); $set['atBats.$.result'] = ab.result; }
+    if (order !== undefined) { ab.order = Number(order); $set['atBats.$.order'] = ab.order; }
+    if (run !== undefined) { ab.run = Number(run); $set['atBats.$.run'] = ab.run; }
+    if (rbi !== undefined) { ab.rbi = Number(rbi); $set['atBats.$.rbi'] = ab.rbi; }
+    if (note !== undefined) { ab.note = String(note); $set['atBats.$.note'] = ab.note; }
+    if (balls !== undefined) { ab.balls = balls != null ? Number(balls) : null; $set['atBats.$.balls'] = ab.balls; }
+    if (strikes !== undefined) { ab.strikes = strikes != null ? Number(strikes) : null; $set['atBats.$.strikes'] = ab.strikes; }
+    if (fouls !== undefined) { ab.fouls = Number(fouls); $set['atBats.$.fouls'] = ab.fouls; }
+    if (pitches !== undefined) { ab.pitches = pitches != null ? Number(pitches) : null; $set['atBats.$.pitches'] = ab.pitches; }
+    if (runnerEvents !== undefined) {
+      ab.runnerEvents = Array.isArray(runnerEvents) ? runnerEvents : [];
+      $set['atBats.$.runnerEvents'] = ab.runnerEvents;
+    }
 
-    await game.save();
+    await Game.updateOne(
+      { _id: req.params.gameId, 'atBats.id': req.params.atbatId },
+      { $set }
+    );
     res.json({ success: true, data: ab });
   } catch (err) {
     next(err);

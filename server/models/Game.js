@@ -14,6 +14,12 @@ const opponentLineupEntrySchema = new mongoose.Schema({
   position: String,
 }, { _id: false });
 
+const runnerEventSchema = new mongoose.Schema({
+  runnerName: { type: String, required: true },
+  fromBase:   { type: Number, required: true }, // 1, 2, 3
+  toBase:     { type: Number, required: true }, // 0=아웃, 1, 2, 3, 4=홈인
+}, { _id: false });
+
 const atBatSchema = new mongoose.Schema({
   id: String,
   inning: Number,
@@ -23,6 +29,11 @@ const atBatSchema = new mongoose.Schema({
   run: { type: Number, default: 0 },
   rbi: { type: Number, default: 0 },
   note: { type: String, default: '' },
+  balls:   { type: Number, default: null },
+  strikes: { type: Number, default: null },
+  fouls:   { type: Number, default: 0 },
+  pitches: { type: Number, default: null },
+  runnerEvents: [runnerEventSchema],
 }, { _id: false });
 
 const opponentAtBatSchema = new mongoose.Schema({
@@ -35,6 +46,10 @@ const opponentAtBatSchema = new mongoose.Schema({
   run: { type: Number, default: 0 },
   pitcherId: String,
   note: { type: String, default: '' },
+  balls:   { type: Number, default: null },
+  strikes: { type: Number, default: null },
+  fouls:   { type: Number, default: 0 },
+  pitches: { type: Number, default: null },
 }, { _id: false });
 
 const pitchingSchema = new mongoose.Schema({

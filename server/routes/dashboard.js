@@ -3,7 +3,7 @@ const router = express.Router();
 const Player = require('../models/Player');
 const Game = require('../models/Game');
 const League = require('../models/League');
-const { calculateStats } = require('./stats');
+const { calculateStats } = require('../services/statsService');
 
 function round3(n) {
   return Math.round(n * 1000) / 1000;

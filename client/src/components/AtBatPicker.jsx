@@ -114,7 +114,7 @@ function BallCountSection({ balls, strikes, fouls, result, onBallsChange, onStri
   const isBb  = result === 'BB';
   const isSo  = result === 'SO';
 
-  const pitches = calcPitches(balls ?? 0, strikes ?? 0, fouls, result);
+  const pitches = result ? calcPitches(balls ?? 0, strikes ?? 0, fouls, result) : null;
 
   return (
     <Box sx={{ bgcolor: 'grey.50', borderRadius: 2, p: 1.5 }}>

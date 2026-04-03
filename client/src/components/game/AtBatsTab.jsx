@@ -32,6 +32,43 @@ function ResultBadge({ result }) {
   );
 }
 
+function BallCountBadge({ balls, strikes, fouls, pitches, result }) {
+  const hasBalls = balls != null;
+  const hasStrikes = strikes != null;
+  if (!hasBalls && !hasStrikes && result !== 'HBP') return null;
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
+      {result === 'HBP' ? (
+        <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: '"Roboto Mono", monospace' }}>1구</Typography>
+      ) : (
+        <>
+          {/* 볼 도트 */}
+          <Box sx={{ display: 'flex', gap: 0.3 }}>
+            {Array.from({ length: 3 }, (_, i) => (
+              <Box key={i} sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: i < (balls ?? 0) ? '#1565c0' : '#dbeafe' }} />
+            ))}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 0.3 }}>
+            {Array.from({ length: 2 }, (_, i) => (
+              <Box key={i} sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: i < (strikes ?? 0) ? '#b71c1c' : '#fee2e2' }} />
+            ))}
+          </Box>
+          {fouls > 0 && (
+            <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: '"Roboto Mono", monospace', fontSize: '0.65rem' }}>
+              F{fouls}
+            </Typography>
+          )}
+          {pitches != null && (
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontFamily: '"Roboto Mono", monospace', fontWeight: 700, fontSize: '0.65rem' }}>
+              {pitches}구
+            </Typography>
+          )}
+        </>
+      )}
+    </Box>
+  );
+}
+
 function AtBatRow({ atBat, player, onDelete }) {
   const info = RESULT_CODES[atBat.result];
   const colors = RESULT_TYPE_COLORS[info?.type] || RESULT_TYPE_COLORS.sacrifice;
@@ -60,9 +97,16 @@ function AtBatRow({ atBat, player, onDelete }) {
           <Typography variant="body2" sx={{ fontWeight: 600 }}>{player?.name ?? atBat.playerId}</Typography>
         }
         secondary={
-          <Typography variant="caption" color="text.secondary">
-            {info?.label ?? atBat.result}{atBat.note ? ` · ${atBat.note}` : ''}{atBat.rbi > 0 ? ` · 타점 ${atBat.rbi}` : ''}
-          </Typography>
+          <Box component="span">
+            <Typography variant="caption" color="text.secondary" component="span">
+              {info?.label ?? atBat.result}{atBat.note ? ` · ${atBat.note}` : ''}{atBat.rbi > 0 ? ` · 타점 ${atBat.rbi}` : ''}
+            </Typography>
+            <BallCountBadge
+              balls={atBat.balls} strikes={atBat.strikes}
+              fouls={atBat.fouls} pitches={atBat.pitches}
+              result={atBat.result}
+            />
+          </Box>
         }
       />
     </ListItem>

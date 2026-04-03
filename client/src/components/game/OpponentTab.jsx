@@ -34,6 +34,42 @@ import OpponentAtBatPicker from '../OpponentAtBatPicker.jsx';
 import { RESULT_CODES, RESULT_TYPE_COLORS, POSITIONS, POSITION_MAP } from '../../utils/constants.js';
 import { getEffectiveOpponentLineup } from '../../utils/lineup.js';
 
+function BallCountBadge({ balls, strikes, fouls, pitches, result }) {
+  const hasBalls = balls != null;
+  const hasStrikes = strikes != null;
+  if (!hasBalls && !hasStrikes && result !== 'HBP') return null;
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
+      {result === 'HBP' ? (
+        <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: '"Roboto Mono", monospace' }}>1구</Typography>
+      ) : (
+        <>
+          <Box sx={{ display: 'flex', gap: 0.3 }}>
+            {Array.from({ length: 3 }, (_, i) => (
+              <Box key={i} sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: i < (balls ?? 0) ? '#1565c0' : '#dbeafe' }} />
+            ))}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 0.3 }}>
+            {Array.from({ length: 2 }, (_, i) => (
+              <Box key={i} sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: i < (strikes ?? 0) ? '#b71c1c' : '#fee2e2' }} />
+            ))}
+          </Box>
+          {fouls > 0 && (
+            <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: '"Roboto Mono", monospace', fontSize: '0.65rem' }}>
+              F{fouls}
+            </Typography>
+          )}
+          {pitches != null && (
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontFamily: '"Roboto Mono", monospace', fontWeight: 700, fontSize: '0.65rem' }}>
+              {pitches}구
+            </Typography>
+          )}
+        </>
+      )}
+    </Box>
+  );
+}
+
 function ResultBadge({ result }) {
   const info = RESULT_CODES[result];
   const colors = RESULT_TYPE_COLORS[info?.type] || RESULT_TYPE_COLORS.sacrifice;
@@ -418,13 +454,20 @@ export default function OpponentTab({ gameId, game, players, opponentAtBats, sub
                       <ListItemText
                         primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{ab.batterName}</Typography>}
                         secondary={
-                          <Typography variant="caption" color="text.secondary">
-                            {info?.label ?? ab.result}
-                            {pitcherPlayer ? ` · 투수: ${pitcherPlayer.name}` : ''}
-                            {ab.note ? ` · ${ab.note}` : ''}
-                            {ab.rbi > 0 ? ` · 타점 ${ab.rbi}` : ''}
-                            {ab.run > 0 ? ` · 득점 ${ab.run}` : ''}
-                          </Typography>
+                          <Box component="span">
+                            <Typography variant="caption" color="text.secondary" component="span">
+                              {info?.label ?? ab.result}
+                              {pitcherPlayer ? ` · 투수: ${pitcherPlayer.name}` : ''}
+                              {ab.note ? ` · ${ab.note}` : ''}
+                              {ab.rbi > 0 ? ` · 타점 ${ab.rbi}` : ''}
+                              {ab.run > 0 ? ` · 득점 ${ab.run}` : ''}
+                            </Typography>
+                            <BallCountBadge
+                              balls={ab.balls} strikes={ab.strikes}
+                              fouls={ab.fouls} pitches={ab.pitches}
+                              result={ab.result}
+                            />
+                          </Box>
                         }
                       />
                     </ListItem>

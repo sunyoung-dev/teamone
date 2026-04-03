@@ -132,14 +132,14 @@ function BallCountSection({ balls, strikes, fouls, result, onBallsChange, onStri
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, opacity: isHbp ? 0.45 : 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 36, color: '#1565c0' }}>볼</Typography>
-          <CountDots value={balls ?? 0} max={4} filledColor="#1565c0" emptyColor="#dbeafe"
+          <CountDots value={balls ?? 0} max={3} filledColor="#1565c0" emptyColor="#dbeafe"
             onChange={isBb ? undefined : onBallsChange} disabled={isHbp || isBb} />
           {isBb && <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 600 }}>3 고정</Typography>}
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 36, color: '#b71c1c' }}>스트</Typography>
-          <CountDots value={strikes ?? 0} max={3} filledColor="#b71c1c" emptyColor="#fee2e2"
+          <CountDots value={strikes ?? 0} max={2} filledColor="#b71c1c" emptyColor="#fee2e2"
             onChange={isSo ? undefined : onStrikesChange} disabled={isHbp || isSo} />
           {isSo && <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 600 }}>2 고정</Typography>}
         </Box>

@@ -133,7 +133,7 @@ function BallCountSection({ balls, strikes, fouls, result, onBallsChange, onStri
           <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 36, color: '#1565c0' }}>볼</Typography>
           <CountDots
             value={balls ?? 0}
-            max={4}
+            max={3}
             filledColor="#1565c0"
             emptyColor="#dbeafe"
             onChange={isBb ? undefined : onBallsChange}
@@ -149,7 +149,7 @@ function BallCountSection({ balls, strikes, fouls, result, onBallsChange, onStri
           <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 36, color: '#b71c1c' }}>스트</Typography>
           <CountDots
             value={strikes ?? 0}
-            max={3}
+            max={2}
             filledColor="#b71c1c"
             emptyColor="#fee2e2"
             onChange={isSo ? undefined : onStrikesChange}

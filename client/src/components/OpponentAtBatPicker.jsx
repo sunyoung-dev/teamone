@@ -225,12 +225,7 @@ export default function OpponentAtBatPicker({
   const handleConfirm = () => {
     if (!selectedResult) return;
     const { balls: b, strikes: s } = autoCorrectCount(balls ?? 0, strikes ?? 0, selectedResult);
-    const pitches = calcPitches(
-      balls != null ? b : null,
-      strikes != null ? s : null,
-      fouls,
-      selectedResult,
-    );
+    const pitches = calcPitches(b, s, fouls, selectedResult);
     onConfirm({ result: selectedResult, inning: selectedInning, rbi, run, note, pitcherId, balls: b, strikes: s, fouls, pitches });
     reset();
   };

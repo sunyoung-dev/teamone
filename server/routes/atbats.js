@@ -124,7 +124,10 @@ router.put('/:atbatId', async (req, res, next) => {
     if (strikes !== undefined) ab.strikes = strikes != null ? Number(strikes) : null;
     if (fouls !== undefined) ab.fouls = Number(fouls);
     if (pitches !== undefined) ab.pitches = pitches != null ? Number(pitches) : null;
-    if (runnerEvents !== undefined) ab.runnerEvents = Array.isArray(runnerEvents) ? runnerEvents : [];
+    if (runnerEvents !== undefined) {
+      ab.runnerEvents = Array.isArray(runnerEvents) ? runnerEvents : [];
+      game.markModified('atBats');
+    }
 
     await game.save();
     res.json({ success: true, data: ab });

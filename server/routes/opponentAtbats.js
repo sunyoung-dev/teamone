@@ -42,7 +42,7 @@ router.post('/', async (req, res, next) => {
       });
     }
 
-    const { batterOrder, batterName, inning, result, rbi, run, pitcherId, note } = req.body;
+    const { batterOrder, batterName, inning, result, rbi, run, pitcherId, note, balls, strikes, fouls, pitches } = req.body;
     if (!batterOrder || !batterName || !inning || !result) {
       return res.status(400).json({
         success: false,
@@ -66,6 +66,10 @@ router.post('/', async (req, res, next) => {
       run: run !== undefined ? Number(run) : 0,
       pitcherId: pitcherId != null && pitcherId !== '' ? String(pitcherId) : '',
       note: note !== undefined ? String(note) : '',
+      balls:   balls != null ? Number(balls) : null,
+      strikes: strikes != null ? Number(strikes) : null,
+      fouls:   fouls !== undefined ? Number(fouls) : 0,
+      pitches: pitches != null ? Number(pitches) : null,
     };
 
     game.opponentAtBats.push(newOab);
@@ -95,7 +99,7 @@ router.put('/:id', async (req, res, next) => {
       });
     }
 
-    const { batterOrder, batterName, inning, result, rbi, run, pitcherId, note } = req.body;
+    const { batterOrder, batterName, inning, result, rbi, run, pitcherId, note, balls, strikes, fouls, pitches } = req.body;
     if (result !== undefined && !VALID_RESULTS.includes(result)) {
       return res.status(400).json({
         success: false,
@@ -111,6 +115,10 @@ router.put('/:id', async (req, res, next) => {
     if (run !== undefined) oab.run = Number(run);
     if (pitcherId !== undefined) oab.pitcherId = pitcherId != null && pitcherId !== '' ? String(pitcherId) : '';
     if (note !== undefined) oab.note = String(note);
+    if (balls !== undefined) oab.balls = balls != null ? Number(balls) : null;
+    if (strikes !== undefined) oab.strikes = strikes != null ? Number(strikes) : null;
+    if (fouls !== undefined) oab.fouls = Number(fouls);
+    if (pitches !== undefined) oab.pitches = pitches != null ? Number(pitches) : null;
 
     await game.save();
     res.json({ success: true, data: oab });

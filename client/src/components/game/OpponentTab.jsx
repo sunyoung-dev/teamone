@@ -147,7 +147,7 @@ export default function OpponentTab({ gameId, game, players, opponentAtBats, sub
     setPickerOpen(true);
   };
 
-  const handlePickerConfirm = async ({ result, inning, rbi, run, note, pitcherId }) => {
+  const handlePickerConfirm = async ({ result, inning, rbi, run, note, pitcherId, balls, strikes, fouls, pitches }) => {
     const nextOrder = (opponentAtBats.filter((ab) => ab.inning === inning).length) + 1;
     const newAtBat = {
       inning,
@@ -158,6 +158,10 @@ export default function OpponentTab({ gameId, game, players, opponentAtBats, sub
       run: run || 0,
       note: note || '',
       pitcherId: pitcherId || '',
+      balls: balls ?? null,
+      strikes: strikes ?? null,
+      fouls: fouls ?? 0,
+      pitches: pitches ?? null,
     };
     try {
       const res = await addOpponentAtBat(gameId, newAtBat);

@@ -77,13 +77,18 @@ export default function PitchingTab({ gameId, game, players, pitchingRecords, op
     const pid = explicitId || inningPitcherMap[ab.inning] || lineupPitcherId;
     if (!pid) return;
     if (!pitcherStatsMap[pid]) {
-      pitcherStatsMap[pid] = { H: 0, K: 0, BB: 0, R: 0 };
+      pitcherStatsMap[pid] = { H: 0, K: 0, BB: 0, R: 0, autoPitches: 0, hasAllPitches: true };
     }
     const s = pitcherStatsMap[pid];
     if (['1H', '2H', '3H', 'HR'].includes(ab.result)) s.H += 1;
     if (ab.result === 'SO') s.K += 1;
     if (ab.result === 'BB' || ab.result === 'HBP') s.BB += 1;
     s.R += ab.run || 0;
+    if (ab.pitches != null) {
+      s.autoPitches += ab.pitches;
+    } else {
+      s.hasAllPitches = false;
+    }
   });
 
   const calcIP = (rec) => {
@@ -218,9 +223,17 @@ export default function PitchingTab({ gameId, game, players, pitchingRecords, op
                         <Typography sx={{ fontFamily: '"Roboto Mono", monospace', fontWeight: 700 }}>{ip}</Typography>
                       </TableCell>
                       <TableCell align="center">
-                        <Typography sx={{ fontFamily: '"Roboto Mono", monospace' }}>
-                          {rec.pitchCount != null ? rec.pitchCount : '-'}
-                        </Typography>
+                        {rec.pitchCount != null ? (
+                          <Typography sx={{ fontFamily: '"Roboto Mono", monospace' }}>
+                            {rec.pitchCount}
+                          </Typography>
+                        ) : stats.hasAllPitches && stats.autoPitches > 0 ? (
+                          <Typography sx={{ fontFamily: '"Roboto Mono", monospace', color: 'text.secondary', fontStyle: 'italic' }}>
+                            {stats.autoPitches}
+                          </Typography>
+                        ) : (
+                          <Typography sx={{ fontFamily: '"Roboto Mono", monospace' }}>-</Typography>
+                        )}
                       </TableCell>
                       <TableCell align="center">
                         <Typography sx={{ fontFamily: '"Roboto Mono", monospace', color: stats.H > 0 ? 'success.main' : 'text.primary' }}>

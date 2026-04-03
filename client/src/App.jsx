@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import Paper from '@mui/material/Paper';
+import CircularProgress from '@mui/material/CircularProgress';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HomeIcon from '@mui/icons-material/Home';
 import SportsBaseballIcon from '@mui/icons-material/SportsBaseball';
@@ -15,15 +16,15 @@ import PeopleIcon from '@mui/icons-material/People';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
-import DashboardPage from './pages/DashboardPage.jsx';
-import GamesPage from './pages/GamesPage.jsx';
-import GameDetailPage from './pages/GameDetailPage.jsx';
-import GameFormPage from './pages/GameFormPage.jsx';
-import PlayersPage from './pages/PlayersPage.jsx';
-import PlayerDetailPage from './pages/PlayerDetailPage.jsx';
-import PlayerFormPage from './pages/PlayerFormPage.jsx';
-import StatsPage from './pages/StatsPage.jsx';
-import LeaguesPage from './pages/LeaguesPage.jsx';
+const DashboardPage    = lazy(() => import('./pages/DashboardPage.jsx'));
+const GamesPage        = lazy(() => import('./pages/GamesPage.jsx'));
+const GameDetailPage   = lazy(() => import('./pages/GameDetailPage.jsx'));
+const GameFormPage     = lazy(() => import('./pages/GameFormPage.jsx'));
+const PlayersPage      = lazy(() => import('./pages/PlayersPage.jsx'));
+const PlayerDetailPage = lazy(() => import('./pages/PlayerDetailPage.jsx'));
+const PlayerFormPage   = lazy(() => import('./pages/PlayerFormPage.jsx'));
+const StatsPage        = lazy(() => import('./pages/StatsPage.jsx'));
+const LeaguesPage      = lazy(() => import('./pages/LeaguesPage.jsx'));
 
 const NAV_TABS = [
   { label: '홈', icon: <HomeIcon />, path: '/' },
@@ -116,6 +117,7 @@ function AppLayout() {
           WebkitOverflowScrolling: 'touch',
         }}
       >
+        <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}><CircularProgress /></Box>}>
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/games" element={<GamesPage />} />
@@ -129,6 +131,7 @@ function AppLayout() {
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/leagues" element={<LeaguesPage />} />
         </Routes>
+        </Suspense>
       </Box>
 
       {/* Bottom Navigation */}

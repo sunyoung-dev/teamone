@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { calcPitches, autoCorrectCount } from './pitchCount.js';
+import { calcPitches, autoCorrectCount, calcRunRbi } from './pitchCount.js';
 
 // ── calcPitches ────────────────────────────────────────────────────────────
 describe('calcPitches', () => {
@@ -58,6 +58,75 @@ describe('calcPitches', () => {
     for (const result of ['GO', 'FO', 'DP', 'E', 'SF', 'SH']) {
       expect(calcPitches(1, 0, 0, result)).toBe(2);
     }
+  });
+});
+
+// ── calcRunRbi ─────────────────────────────────────────────────────────────
+describe('calcRunRbi', () => {
+  test('주루 이벤트 없으면 run=0, rbi=0', () => {
+    expect(calcRunRbi([], '1H')).toEqual({ run: 0, rbi: 0 });
+  });
+
+  test('runnerEvents가 null/undefined이면 run=0, rbi=0', () => {
+    expect(calcRunRbi(null, 'GO')).toEqual({ run: 0, rbi: 0 });
+    expect(calcRunRbi(undefined, 'GO')).toEqual({ run: 0, rbi: 0 });
+  });
+
+  test('홈인 주자 1명 → run=1, rbi=1 (단타)', () => {
+    const events = [{ runnerName: '김철수', fromBase: 3, toBase: 4 }];
+    expect(calcRunRbi(events, '1H')).toEqual({ run: 1, rbi: 1 });
+  });
+
+  test('홈인 주자 2명 → run=2, rbi=2', () => {
+    const events = [
+      { runnerName: '김철수', fromBase: 2, toBase: 4 },
+      { runnerName: '이영희', fromBase: 3, toBase: 4 },
+    ];
+    expect(calcRunRbi(events, '2H')).toEqual({ run: 2, rbi: 2 });
+  });
+
+  test('홈런이면 타자 득점 포함', () => {
+    const events = [{ runnerName: '김철수', fromBase: 1, toBase: 4 }];
+    // 주자1 + 타자1 = run 2
+    expect(calcRunRbi(events, 'HR')).toEqual({ run: 2, rbi: 2 });
+  });
+
+  test('솔로 홈런 (주루 이벤트 없음)', () => {
+    expect(calcRunRbi([], 'HR')).toEqual({ run: 1, rbi: 1 });
+  });
+
+  test('만루 홈런: 주자 3명 홈인 + 타자 → run=4, rbi=4', () => {
+    const events = [
+      { runnerName: '선수A', fromBase: 1, toBase: 4 },
+      { runnerName: '선수B', fromBase: 2, toBase: 4 },
+      { runnerName: '선수C', fromBase: 3, toBase: 4 },
+    ];
+    expect(calcRunRbi(events, 'HR')).toEqual({ run: 4, rbi: 4 });
+  });
+
+  test('실책(E)이면 타점은 0', () => {
+    const events = [{ runnerName: '김철수', fromBase: 3, toBase: 4 }];
+    expect(calcRunRbi(events, 'E')).toEqual({ run: 1, rbi: 0 });
+  });
+
+  test('주자 아웃(toBase=0)은 득점/타점에 포함 안됨', () => {
+    const events = [
+      { runnerName: '김철수', fromBase: 2, toBase: 0 },
+      { runnerName: '이영희', fromBase: 3, toBase: 4 },
+    ];
+    expect(calcRunRbi(events, '1H')).toEqual({ run: 1, rbi: 1 });
+  });
+
+  test('주자 진루(홈인 아님)는 득점/타점에 포함 안됨', () => {
+    const events = [
+      { runnerName: '김철수', fromBase: 1, toBase: 3 },
+    ];
+    expect(calcRunRbi(events, '2H')).toEqual({ run: 0, rbi: 0 });
+  });
+
+  test('BB 출루 시 주자 밀려남 → run=1, rbi=1', () => {
+    const events = [{ runnerName: '김철수', fromBase: 3, toBase: 4 }];
+    expect(calcRunRbi(events, 'BB')).toEqual({ run: 1, rbi: 1 });
   });
 });
 

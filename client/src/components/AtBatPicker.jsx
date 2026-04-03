@@ -11,8 +11,8 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import TextField from '@mui/material/TextField';
-import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import { RESULT_GROUPS, RESULT_CODES, RESULT_TYPE_COLORS } from '../utils/constants.js';
@@ -205,12 +205,10 @@ function BallCountSection({ balls, strikes, fouls, result, onBallsChange, onStri
 
 export default function AtBatPicker({
   open, onClose, onConfirm, playerName, inning, maxInning = 9,
-  initialResult = null, initialInning = null, initialRbi = 0,
+  initialResult = null, initialInning = null,
 }) {
   const [selectedResult, setSelectedResult] = useState(initialResult);
   const [selectedInning, setSelectedInning] = useState(initialInning || inning || 1);
-  const [rbi, setRbi] = useState(initialRbi);
-  const [run, setRun] = useState(0);
   const [note, setNote] = useState('');
   const [balls, setBalls] = useState(null);
   const [strikes, setStrikes] = useState(null);
@@ -220,8 +218,6 @@ export default function AtBatPicker({
     if (open) {
       setSelectedInning(initialInning || inning || 1);
       setSelectedResult(initialResult);
-      setRbi(initialRbi);
-      setRun(0);
       setNote('');
       setBalls(null);
       setStrikes(null);
@@ -243,14 +239,12 @@ export default function AtBatPicker({
     if (!selectedResult) return;
     const { balls: b, strikes: s } = autoCorrectCount(balls ?? 0, strikes ?? 0, selectedResult);
     const pitches = calcPitches(b, s, fouls, selectedResult);
-    onConfirm({ result: selectedResult, inning: selectedInning, rbi, run, note, balls: b, strikes: s, fouls, pitches });
+    onConfirm({ result: selectedResult, inning: selectedInning, note, balls: b, strikes: s, fouls, pitches });
   };
 
   const handleClose = () => {
     setSelectedResult(initialResult);
     setSelectedInning(initialInning || inning || 1);
-    setRbi(initialRbi);
-    setRun(0);
     setNote('');
     setBalls(null);
     setStrikes(null);
@@ -325,20 +319,16 @@ export default function AtBatPicker({
 
         <Divider sx={{ my: 1.5 }} />
 
-        {/* 득점 / 타점 */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5 }}>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Counter label="득점" value={run} onChange={setRun} max={4} />
-            <Counter label="타점" value={rbi} onChange={setRbi} max={4} />
-          </Box>
-          {selectedResult && (
+        {/* 선택된 결과 표시 */}
+        {selectedResult && (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 0.5 }}>
             <Chip
               label={`${selectedResult} · ${selectedInfo?.label}`}
               size="small"
               sx={{ bgcolor: selectedColors?.selectedBg, color: '#fff', fontWeight: 700, fontFamily: '"Roboto Mono", monospace' }}
             />
-          )}
-        </Box>
+          </Box>
+        )}
 
         {/* 메모 */}
         <TextField

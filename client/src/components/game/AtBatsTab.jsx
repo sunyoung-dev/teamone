@@ -183,9 +183,9 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
     setPickerOpen(true);
   };
 
-  const handlePickerConfirm = async ({ result, inning, rbi, run, note, balls, strikes, fouls, pitches }) => {
+  const handlePickerConfirm = async ({ result, inning, note, balls, strikes, fouls, pitches }) => {
     const nextOrder = (atBats.filter((ab) => ab.inning === inning).length) + 1;
-    const newAtBat = { inning, playerId: selectedPlayerId, result, order: nextOrder, rbi: rbi || 0, run: run || 0, note: note || '', balls: balls ?? null, strikes: strikes ?? null, fouls: fouls ?? 0, pitches: pitches ?? null };
+    const newAtBat = { inning, playerId: selectedPlayerId, result, order: nextOrder, rbi: 0, run: 0, note: note || '', balls: balls ?? null, strikes: strikes ?? null, fouls: fouls ?? 0, pitches: pitches ?? null };
     try {
       const res = await addAtBat(gameId, newAtBat);
       onAtBatAdded(res.data || { ...newAtBat, id: Date.now().toString() });

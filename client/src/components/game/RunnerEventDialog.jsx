@@ -19,6 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import { updateAtBat } from '../../api.js';
 import { RESULT_CODES } from '../../utils/constants.js';
+import { calcRunRbi } from '../../utils/pitchCount.js';
 
 export const BASE_LABELS = { 1: '1루', 2: '2루', 3: '3루', 4: '홈인', 0: '아웃' };
 const FROM_OPTIONS = [1, 2, 3];
@@ -55,8 +56,9 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await updateAtBat(gameId, atBat.id, { runnerEvents: events });
-      onSaved(res.data || { ...atBat, runnerEvents: events });
+      const { run, rbi } = calcRunRbi(events, atBat.result);
+      const res = await updateAtBat(gameId, atBat.id, { runnerEvents: events, run, rbi });
+      onSaved(res.data || { ...atBat, runnerEvents: events, run, rbi });
       onClose();
     } catch (e) {
       console.error(e);

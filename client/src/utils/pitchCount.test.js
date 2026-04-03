@@ -41,6 +41,24 @@ describe('calcPitches', () => {
   test('1볼 2스트 0파울 홈런 → 4구', () => {
     expect(calcPitches(1, 2, 0, 'HR')).toBe(4);
   });
+
+  test('fouls=undefined이면 0으로 처리', () => {
+    expect(calcPitches(1, 1, undefined, 'GO')).toBe(3);
+  });
+
+  test('파울 많아도 정상 합산 (0볼 0스트 10파울 → 11구: 파울10 + 결정구1)', () => {
+    expect(calcPitches(0, 0, 10, 'SO')).toBe(11);
+  });
+
+  test('BB 결과에서 balls/strikes 모두 있으면 정상 계산', () => {
+    expect(calcPitches(3, 2, 1, 'BB')).toBe(7);
+  });
+
+  test('GO/FO/DP/E/SF/SH 결과 모두 null 없으면 정상 계산', () => {
+    for (const result of ['GO', 'FO', 'DP', 'E', 'SF', 'SH']) {
+      expect(calcPitches(1, 0, 0, result)).toBe(2);
+    }
+  });
 });
 
 // ── autoCorrectCount ───────────────────────────────────────────────────────
@@ -77,5 +95,25 @@ describe('autoCorrectCount', () => {
       expect(r.balls).toBe(0);
       expect(r.strikes).toBe(0);
     }
+  });
+
+  test('HBP는 보정 없음', () => {
+    const r = autoCorrectCount(0, 0, 'HBP');
+    expect(r.balls).toBe(0);
+    expect(r.strikes).toBe(0);
+  });
+
+  test('BB일 때 balls가 null이어도 3으로 보정', () => {
+    expect(autoCorrectCount(null, null, 'BB').balls).toBe(3);
+  });
+
+  test('SO일 때 strikes가 null이어도 2로 보정', () => {
+    expect(autoCorrectCount(null, null, 'SO').strikes).toBe(2);
+  });
+
+  test('null 입력에 비 BB/SO 결과 → null 그대로 반환', () => {
+    const r = autoCorrectCount(null, null, 'GO');
+    expect(r.balls).toBeNull();
+    expect(r.strikes).toBeNull();
   });
 });

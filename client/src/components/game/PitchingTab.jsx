@@ -18,6 +18,7 @@ import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { addPitching, deletePitching } from '../../api.js';
+import { buildInningPitcherMap, getLineupPitcherId, calcPitcherStatsMap } from '../../utils/pitcherStats.js';
 
 export default function PitchingTab({ gameId, game, players, pitchingRecords, opponentAtBats, onPitchingAdded, onPitchingDeleted }) {
   const [pitcherId, setPitcherId] = useState('');
@@ -59,37 +60,9 @@ export default function PitchingTab({ gameId, game, players, pitchingRecords, op
     }
   };
 
-  const inningPitcherMap = {};
-  pitchingRecords.forEach((rec) => {
-    for (let inn = rec.startInning; inn <= rec.endInning; inn++) {
-      inningPitcherMap[inn] = rec.pitcherId;
-    }
-  });
-
-  const lineupPitcherId = pitchingRecords.length === 0
-    ? ((game?.lineup || []).find((e) => e.position === 'P')?.playerId || null)
-    : null;
-
-  const pitcherStatsMap = {};
-  opponentAtBats.forEach((ab) => {
-    const rawId = ab.pitcherId;
-    const explicitId = (rawId && rawId !== 'undefined' && rawId !== 'null') ? rawId : '';
-    const pid = explicitId || inningPitcherMap[ab.inning] || lineupPitcherId;
-    if (!pid) return;
-    if (!pitcherStatsMap[pid]) {
-      pitcherStatsMap[pid] = { H: 0, K: 0, BB: 0, R: 0, autoPitches: 0, hasAllPitches: true };
-    }
-    const s = pitcherStatsMap[pid];
-    if (['1H', '2H', '3H', 'HR'].includes(ab.result)) s.H += 1;
-    if (ab.result === 'SO') s.K += 1;
-    if (ab.result === 'BB' || ab.result === 'HBP') s.BB += 1;
-    s.R += ab.run || 0;
-    if (ab.pitches != null) {
-      s.autoPitches += ab.pitches;
-    } else {
-      s.hasAllPitches = false;
-    }
-  });
+  const inningPitcherMap = buildInningPitcherMap(pitchingRecords);
+  const lineupPitcherId = getLineupPitcherId(game?.lineup, pitchingRecords);
+  const pitcherStatsMap = calcPitcherStatsMap(opponentAtBats, inningPitcherMap, lineupPitcherId);
 
   const calcIP = (rec) => {
     const full = rec.endInning - rec.startInning + 1;

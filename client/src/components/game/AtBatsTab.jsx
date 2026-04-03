@@ -336,6 +336,7 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
         atBat={runnerDialogAtBat}
         gameId={gameId}
         players={players}
+        lineup={originalLineup}
         onSaved={(updated) => {
           onAtBatUpdated?.(updated);
           setRunnerDialogAtBat(null);

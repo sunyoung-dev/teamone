@@ -113,23 +113,27 @@ router.put('/:atbatId', async (req, res, next) => {
       });
     }
 
-    if (inning !== undefined) ab.inning = Number(inning);
-    if (playerId !== undefined) ab.playerId = String(playerId);
-    if (result !== undefined) ab.result = String(result);
-    if (order !== undefined) ab.order = Number(order);
-    if (run !== undefined) ab.run = Number(run);
-    if (rbi !== undefined) ab.rbi = Number(rbi);
-    if (note !== undefined) ab.note = String(note);
-    if (balls !== undefined) ab.balls = balls != null ? Number(balls) : null;
-    if (strikes !== undefined) ab.strikes = strikes != null ? Number(strikes) : null;
-    if (fouls !== undefined) ab.fouls = Number(fouls);
-    if (pitches !== undefined) ab.pitches = pitches != null ? Number(pitches) : null;
+    const $set = {};
+    if (inning !== undefined) { ab.inning = Number(inning); $set['atBats.$.inning'] = ab.inning; }
+    if (playerId !== undefined) { ab.playerId = String(playerId); $set['atBats.$.playerId'] = ab.playerId; }
+    if (result !== undefined) { ab.result = String(result); $set['atBats.$.result'] = ab.result; }
+    if (order !== undefined) { ab.order = Number(order); $set['atBats.$.order'] = ab.order; }
+    if (run !== undefined) { ab.run = Number(run); $set['atBats.$.run'] = ab.run; }
+    if (rbi !== undefined) { ab.rbi = Number(rbi); $set['atBats.$.rbi'] = ab.rbi; }
+    if (note !== undefined) { ab.note = String(note); $set['atBats.$.note'] = ab.note; }
+    if (balls !== undefined) { ab.balls = balls != null ? Number(balls) : null; $set['atBats.$.balls'] = ab.balls; }
+    if (strikes !== undefined) { ab.strikes = strikes != null ? Number(strikes) : null; $set['atBats.$.strikes'] = ab.strikes; }
+    if (fouls !== undefined) { ab.fouls = Number(fouls); $set['atBats.$.fouls'] = ab.fouls; }
+    if (pitches !== undefined) { ab.pitches = pitches != null ? Number(pitches) : null; $set['atBats.$.pitches'] = ab.pitches; }
     if (runnerEvents !== undefined) {
       ab.runnerEvents = Array.isArray(runnerEvents) ? runnerEvents : [];
-      game.markModified('atBats');
+      $set['atBats.$.runnerEvents'] = ab.runnerEvents;
     }
 
-    await game.save();
+    await Game.updateOne(
+      { _id: req.params.gameId, 'atBats.id': req.params.atbatId },
+      { $set }
+    );
     res.json({ success: true, data: ab });
   } catch (err) {
     next(err);

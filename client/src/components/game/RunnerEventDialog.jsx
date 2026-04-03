@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -25,12 +26,17 @@ export const BASE_LABELS = { 1: '1루', 2: '2루', 3: '3루', 4: '홈인', 0: '�
 const FROM_OPTIONS = [1, 2, 3];
 const TO_OPTIONS = { 1: [2, 3, 4, 0], 2: [3, 4, 0], 3: [4, 0] };
 
-export default function RunnerEventDialog({ open, onClose, atBat, gameId, players, onSaved }) {
+export default function RunnerEventDialog({ open, onClose, atBat, gameId, players, lineup, onSaved }) {
   const [events, setEvents] = useState([]);
   const [newName, setNewName] = useState('');
   const [newFrom, setNewFrom] = useState(null);
   const [newTo, setNewTo] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+
+  // 라인업에 있는 선수만 주자 목록에 표시
+  const lineupPlayerIds = new Set((lineup || []).map((e) => e.playerId));
+  const lineupPlayers = (players || []).filter((p) => lineupPlayerIds.has(p.id));
 
   useEffect(() => {
     if (open) {
@@ -38,6 +44,7 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
       setNewName('');
       setNewFrom(null);
       setNewTo(null);
+      setSaveError(null);
     }
   }, [open, atBat]);
 
@@ -55,6 +62,7 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError(null);
     try {
       const { run, rbi } = calcRunRbi(events, atBat.result);
       const res = await updateAtBat(gameId, atBat.id, { runnerEvents: events, run, rbi });
@@ -62,6 +70,7 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
       onClose();
     } catch (e) {
       console.error(e);
+      setSaveError(e.message || '저장에 실패했습니다');
     }
     setSaving(false);
   };
@@ -84,6 +93,9 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
       </DialogTitle>
 
       <DialogContent sx={{ px: 2, pt: 0, pb: 1 }}>
+        {saveError && (
+          <Alert severity="error" sx={{ mb: 1.5, mt: 1 }}>{saveError}</Alert>
+        )}
         {/* 기록된 주루 이벤트 목록 */}
         {events.length > 0 ? (
           <Box sx={{ mb: 1.5 }}>
@@ -120,12 +132,12 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
           주루 이벤트 추가
         </Typography>
 
-        {/* 주자 선택 */}
+        {/* 주자 선택 (라인업 선수만) */}
         <FormControl fullWidth size="small" sx={{ mb: 1.5 }}>
           <InputLabel>주자</InputLabel>
           <Select value={newName} label="주자" onChange={(e) => setNewName(e.target.value)}>
             <MenuItem value=""><em>선택</em></MenuItem>
-            {(players || []).map((p) => (
+            {lineupPlayers.map((p) => (
               <MenuItem key={p.id} value={p.name}>#{p.number} {p.name}</MenuItem>
             ))}
           </Select>

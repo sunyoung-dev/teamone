@@ -86,6 +86,17 @@ export const getSubstitutions = (gameId) => api.get(`/games/${gameId}/substituti
 export const addSubstitution = (gameId, data) => api.post(`/games/${gameId}/substitutions`, data);
 export const deleteSubstitution = (gameId, id) => api.delete(`/games/${gameId}/substitutions/${id}`);
 
+// ─── Inning Events ───────────────────────────────────────────────────────────
+
+export const getInningEvents = (gameId, params) =>
+  api.get(`/games/${gameId}/inning-events`, { params });
+export const addInningEvent = (gameId, data) =>
+  api.post(`/games/${gameId}/inning-events`, data);
+export const updateInningEvent = (gameId, eventId, data) =>
+  api.put(`/games/${gameId}/inning-events/${eventId}`, data);
+export const deleteInningEvent = (gameId, eventId) =>
+  api.delete(`/games/${gameId}/inning-events/${eventId}`);
+
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
 export const getTeamStats = (params) => api.get('/stats/team', { params });

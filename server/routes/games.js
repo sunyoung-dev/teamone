@@ -6,6 +6,7 @@ const atBatsRouter = require('./atbats');
 const opponentAtbatsRouter = require('./opponentAtbats');
 const pitchingRouter = require('./pitching');
 const substitutionsRouter = require('./substitutions');
+const inningEventsRouter = require('./inningEvents');
 const { validateLineup, VALID_RESULTS, VALID_STATUSES } = require('../services/gameService');
 
 // GET /api/games
@@ -279,5 +280,6 @@ router.use('/:gameId/atbats', atBatsRouter);
 router.use('/:gameId/opponent-atbats', opponentAtbatsRouter);
 router.use('/:gameId/pitching', pitchingRouter);
 router.use('/:gameId/substitutions', substitutionsRouter);
+router.use('/:gameId/inning-events', inningEventsRouter);
 
 module.exports = router;

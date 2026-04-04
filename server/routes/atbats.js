@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const Game = require('../models/Game');
 
-const VALID_RESULTS = ['1H', '2H', '3H', 'HR', 'GO', 'FO', 'SO', 'DP', 'BB', 'HBP', 'SF', 'SH', 'E'];
+const VALID_RESULTS = ['1H', '2H', '3H', 'HR', 'GO', 'FO', 'SO', 'DP', 'BB', 'HBP', 'SF', 'SH', 'E', 'FC', 'CI', 'IBB'];
 
 function nextAtBatId(atBats) {
   const maxNum = atBats.reduce((max, ab) => {
@@ -47,7 +47,7 @@ router.post('/', async (req, res, next) => {
       });
     }
 
-    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches, runnerEvents } = req.body;
+    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches, runnerEvents, hitType, hitDirection, fielders, isEarnedRun } = req.body;
     if (!inning || !playerId || !result || !order) {
       return res.status(400).json({
         success: false,
@@ -74,6 +74,10 @@ router.post('/', async (req, res, next) => {
       strikes: strikes != null ? Number(strikes) : null,
       fouls:   fouls !== undefined ? Number(fouls) : 0,
       pitches: pitches != null ? Number(pitches) : null,
+      hitType:      hitType || null,
+      hitDirection: hitDirection || null,
+      fielders:     Array.isArray(fielders) ? fielders.map(Number) : [],
+      isEarnedRun:  isEarnedRun != null ? Boolean(isEarnedRun) : null,
       runnerEvents: Array.isArray(runnerEvents) ? runnerEvents : [],
     };
 
@@ -105,7 +109,7 @@ router.put('/:atbatId', async (req, res, next) => {
       });
     }
 
-    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches, runnerEvents } = req.body;
+    const { inning, playerId, result, order, run, rbi, note, balls, strikes, fouls, pitches, runnerEvents, hitType, hitDirection, fielders, isEarnedRun } = req.body;
     if (result !== undefined && !VALID_RESULTS.includes(result)) {
       return res.status(400).json({
         success: false,
@@ -125,6 +129,10 @@ router.put('/:atbatId', async (req, res, next) => {
     if (strikes !== undefined) { ab.strikes = strikes != null ? Number(strikes) : null; $set['atBats.$.strikes'] = ab.strikes; }
     if (fouls !== undefined) { ab.fouls = Number(fouls); $set['atBats.$.fouls'] = ab.fouls; }
     if (pitches !== undefined) { ab.pitches = pitches != null ? Number(pitches) : null; $set['atBats.$.pitches'] = ab.pitches; }
+    if (hitType !== undefined) { ab.hitType = hitType || null; $set['atBats.$.hitType'] = ab.hitType; }
+    if (hitDirection !== undefined) { ab.hitDirection = hitDirection || null; $set['atBats.$.hitDirection'] = ab.hitDirection; }
+    if (fielders !== undefined) { ab.fielders = Array.isArray(fielders) ? fielders.map(Number) : []; $set['atBats.$.fielders'] = ab.fielders; }
+    if (isEarnedRun !== undefined) { ab.isEarnedRun = isEarnedRun != null ? Boolean(isEarnedRun) : null; $set['atBats.$.isEarnedRun'] = ab.isEarnedRun; }
     if (runnerEvents !== undefined) {
       ab.runnerEvents = Array.isArray(runnerEvents) ? runnerEvents : [];
       $set['atBats.$.runnerEvents'] = ab.runnerEvents;

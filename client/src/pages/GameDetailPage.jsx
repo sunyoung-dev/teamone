@@ -20,6 +20,7 @@ import {
   getSubstitutions, addSubstitution, deleteSubstitution,
   getLeagues,
 } from '../api.js';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import GameInfoCard from '../components/game/GameInfoCard.jsx';
 import LineupTab from '../components/game/LineupTab.jsx';
@@ -117,9 +118,18 @@ export default function GameDetailPage() {
     <Box sx={{ pb: 10 }}>
       <Box sx={{ p: 2, pb: 0 }}>
         <GameInfoCard game={game} ourScore={ourScore} leagueName={leagueName} />
-        <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
           <Button size="small" startIcon={<EditIcon />} onClick={() => navigate(`/games/${id}/edit`)}>
             경기 정보 수정
+          </Button>
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<AssignmentIcon />}
+            onClick={() => navigate(`/games/${id}/scorecard`)}
+            sx={{ bgcolor: '#1565c0', '&:hover': { bgcolor: '#1976d2' } }}
+          >
+            기록원 화면
           </Button>
           {game.status !== 'final' && (
             <Button size="small" variant="contained" color="secondary" onClick={() => setEndGameOpen(true)}>

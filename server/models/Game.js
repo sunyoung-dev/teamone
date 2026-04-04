@@ -33,7 +33,25 @@ const atBatSchema = new mongoose.Schema({
   strikes: { type: Number, default: null },
   fouls:   { type: Number, default: 0 },
   pitches: { type: Number, default: null },
+  // 기록원 확장 필드
+  hitType:      { type: String, default: null }, // 'GB'|'LD'|'FB'|'PU' (타구 유형)
+  hitDirection: { type: String, default: null }, // 'LL'|'LC'|'C'|'RC'|'RR'|'P'|'1B'|'3B' (타구 방향)
+  fielders:     { type: [Number], default: [] },  // 관여 수비수 포지션 번호 [1-9]
+  isEarnedRun:  { type: Boolean, default: null }, // 자책점 여부
   runnerEvents: [runnerEventSchema],
+}, { _id: false });
+
+// 이닝 이벤트 스키마 (도루/폭투/포일/보크 등 타석 외 사건)
+const inningEventSchema = new mongoose.Schema({
+  id: String,
+  inning: Number,
+  type: { type: String, required: true }, // 'SB'|'CS'|'WP'|'PB'|'BK'|'E'|'OB'|'DI'|'PK'
+  runnerName:  { type: String, default: '' },  // 관련 주자 이름
+  pitcherId:   { type: String, default: null }, // 관련 투수 ID (WP/BK/PB)
+  fielderPos:  { type: Number, default: null }, // 관련 수비 포지션 번호 (E)
+  fromBase:    { type: Number, default: null }, // 이전 루 (1~3)
+  toBase:      { type: Number, default: null }, // 이후 루 (0=아웃, 1~3, 4=홈)
+  note:        { type: String, default: '' },
 }, { _id: false });
 
 const opponentAtBatSchema = new mongoose.Schema({
@@ -90,6 +108,7 @@ const gameSchema = new mongoose.Schema({
   opponentAtBats: [opponentAtBatSchema],
   pitching: [pitchingSchema],
   substitutions: [substitutionSchema],
+  inningEvents: [inningEventSchema],
 }, {
   toJSON: {
     transform: (doc, ret) => {

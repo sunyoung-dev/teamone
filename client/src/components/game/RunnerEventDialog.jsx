@@ -20,6 +20,7 @@ import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import { updateAtBat } from '../../api.js';
 import { RESULT_CODES } from '../../utils/constants.js';
 import { calcRunRbi } from '../../utils/pitchCount.js';
+import { getEffectiveLineup } from '../../utils/lineup.js';
 
 export const BASE_LABELS = { 1: '1루', 2: '2루', 3: '3루', 4: '홈인', 0: '아웃' };
 const FROM_OPTIONS = [1, 2, 3];
@@ -54,7 +55,7 @@ function EventTypeBadge({ type }) {
   );
 }
 
-export default function RunnerEventDialog({ open, onClose, atBat, gameId, players, lineup, onSaved }) {
+export default function RunnerEventDialog({ open, onClose, atBat, gameId, players, lineup, substitutions, onSaved }) {
   const [events, setEvents] = useState([]);
   const [newType, setNewType] = useState(null);
   const [newRunnerId, setNewRunnerId] = useState('');
@@ -64,8 +65,13 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
-  const lineupPlayerIds = new Set((lineup || []).map((e) => e.playerId));
-  const lineupPlayers = (players || []).filter((p) => lineupPlayerIds.has(p.id));
+  const inning = atBat?.inning ?? 1;
+  const effectiveIds = new Set(
+    getEffectiveLineup(lineup || [], substitutions || [], inning).map((e) => e.playerId)
+  );
+  const lineupPlayers = (players || [])
+    .filter((p) => effectiveIds.has(p.id))
+    .sort((a, b) => (a.number || 0) - (b.number || 0));
 
   useEffect(() => {
     if (open) {

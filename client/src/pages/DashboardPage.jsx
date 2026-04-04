@@ -140,6 +140,45 @@ function RecentGamesCard({ games, leagueMap, onGameClick }) {
   );
 }
 
+function RecentHighlightsCard({ recentHighlights, onGameClick }) {
+  if (!recentHighlights?.length) return null;
+  return (
+    <Card>
+      <CardContent sx={{ p: 0 }}>
+        <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <EmojiEventsIcon sx={{ color: 'warning.main' }} fontSize="small" />
+          <Typography variant="subtitle2" sx={{ color: 'warning.dark', fontWeight: 700 }}>특별 기록</Typography>
+        </Box>
+        <Divider />
+        {recentHighlights.map((game, gIdx) => (
+          <React.Fragment key={game.gameId}>
+            <Box sx={{ px: 2, pt: 1, pb: 1.25 }}>
+              <Typography
+                variant="caption"
+                sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mb: 0.75, cursor: 'pointer' }}
+                onClick={() => onGameClick && onGameClick(game.gameId)}
+              >
+                {game.gameDate} vs {game.gameOpponent}
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                {game.highlights.map((h) => (
+                  <Box key={h.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75, bgcolor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 1.5, px: 1.25, py: 0.6 }}>
+                    <Typography sx={{ fontSize: '0.8rem', lineHeight: 1.5, flexShrink: 0 }}>🎉</Typography>
+                    <Typography variant="body2" sx={{ fontSize: '0.8rem', color: '#78350f', lineHeight: 1.4 }}>
+                      {h.playerName && <strong>{h.playerName} </strong>}{h.text}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+            {gIdx < recentHighlights.length - 1 && <Divider />}
+          </React.Fragment>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 function LeaderCard({ leaders }) {
   if (!leaders?.avg?.length) return null;
   return (
@@ -381,6 +420,11 @@ export default function DashboardPage() {
         <RecentGamesCard
           games={data?.recentGames}
           leagueMap={leagueMap}
+          onGameClick={(id) => navigate(`/games/${id}`)}
+        />
+
+        <RecentHighlightsCard
+          recentHighlights={data?.recentHighlights}
           onGameClick={(id) => navigate(`/games/${id}`)}
         />
 

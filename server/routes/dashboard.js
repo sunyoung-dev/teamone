@@ -137,6 +137,17 @@ router.get('/', async (req, res, next) => {
       };
     }).filter(Boolean);
 
+    // Recent highlights: up to 2 most recent games (any status) that have highlights
+    const recentHighlights = sortedGames
+      .filter(g => g.highlights && g.highlights.length > 0)
+      .slice(0, 2)
+      .map(g => ({
+        gameId: g.id,
+        gameDate: g.date,
+        gameOpponent: g.opponent,
+        highlights: g.highlights,
+      }));
+
     res.json({
       success: true,
       data: {
@@ -147,6 +158,7 @@ router.get('/', async (req, res, next) => {
         leaders,
         upcomingGames,
         activeTournaments,
+        recentHighlights,
       }
     });
   } catch (err) {

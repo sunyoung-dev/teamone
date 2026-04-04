@@ -40,7 +40,7 @@ export default function SubstitutionDialog({ open, onClose, onConfirm, game, pla
     .filter((e) => e.player);
 
   const effectivePlayerIds = new Set(effectiveLineup.map((e) => e.playerId));
-  const availableInPlayers = (players || []).filter((p) => !effectivePlayerIds.has(p.id));
+  const availableInPlayers = [...(players || [])].sort((a, b) => (a.number || 0) - (b.number || 0));
 
   const handleClose = () => {
     setInning(1);
@@ -145,7 +145,14 @@ export default function SubstitutionDialog({ open, onClose, onConfirm, game, pla
                 <Select value={inPlayerId} label="들어오는 선수" onChange={(e) => setInPlayerId(e.target.value)}>
                   <MenuItem value=""><em>선택</em></MenuItem>
                   {availableInPlayers.map((p) => (
-                    <MenuItem key={p.id} value={p.id}>#{p.number} {p.name}</MenuItem>
+                    <MenuItem key={p.id} value={p.id}>
+                      #{p.number} {p.name}
+                      {effectivePlayerIds.has(p.id) && (
+                        <Typography component="span" variant="caption" sx={{ ml: 0.75, color: 'text.disabled' }}>
+                          (출전중)
+                        </Typography>
+                      )}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>

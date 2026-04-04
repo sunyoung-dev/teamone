@@ -39,6 +39,8 @@ export const getGame = (id) => api.get(`/games/${id}`);
 export const createGame = (data) => api.post('/games', data);
 export const updateGame = (id, data) => api.put(`/games/${id}`, data);
 export const deleteGame = (id) => api.delete(`/games/${id}`);
+export const addHighlight = (gameId, text) => api.post(`/games/${gameId}/highlights`, { text });
+export const deleteHighlight = (gameId, highlightId) => api.delete(`/games/${gameId}/highlights/${highlightId}`);
 
 // ─── Lineup ───────────────────────────────────────────────────────────────────
 

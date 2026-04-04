@@ -275,6 +275,53 @@ router.put('/:id/opponent-lineup', async (req, res, next) => {
   }
 });
 
+// POST /api/games/:id/highlights
+router.post('/:id/highlights', async (req, res, next) => {
+  try {
+    const game = await Game.findById(req.params.id);
+    if (!game) return res.status(404).json({ success: false, error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다' } });
+
+    const { text } = req.body;
+    if (!text || !String(text).trim()) {
+      return res.status(400).json({ success: false, error: { code: 'INVALID_REQUEST', message: 'text 필드가 필요합니다' } });
+    }
+
+    const existing = game.highlights || [];
+    const maxNum = existing.reduce((max, h) => {
+      const n = parseInt(String(h.id).replace('hl', ''), 10);
+      return isNaN(n) ? max : Math.max(max, n);
+    }, 0);
+    const newHighlight = {
+      id: `hl${String(maxNum + 1).padStart(3, '0')}`,
+      text: String(text).trim(),
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+    game.highlights.push(newHighlight);
+    await game.save();
+    res.status(201).json({ success: true, data: newHighlight });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/games/:id/highlights/:highlightId
+router.delete('/:id/highlights/:highlightId', async (req, res, next) => {
+  try {
+    const game = await Game.findById(req.params.id);
+    if (!game) return res.status(404).json({ success: false, error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다' } });
+
+    const before = game.highlights.length;
+    game.highlights = game.highlights.filter(h => h.id !== req.params.highlightId);
+    if (game.highlights.length === before) {
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: '하이라이트를 찾을 수 없습니다' } });
+    }
+    await game.save();
+    res.json({ success: true, data: null });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Mount sub-routers
 router.use('/:gameId/atbats', atBatsRouter);
 router.use('/:gameId/opponent-atbats', opponentAtbatsRouter);

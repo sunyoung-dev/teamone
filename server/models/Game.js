@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
 
+const highlightSchema = new mongoose.Schema({
+  id:        { type: String, required: true },
+  text:      { type: String, required: true },
+  createdAt: { type: String, default: () => new Date().toISOString().slice(0, 10) },
+}, { _id: false });
+
 const lineupEntrySchema = new mongoose.Schema({
   playerId: String,
   battingOrder: Number,
@@ -118,6 +124,7 @@ const gameSchema = new mongoose.Schema({
   pitching: [pitchingSchema],
   substitutions: [substitutionSchema],
   inningEvents: [inningEventSchema],
+  highlights: [highlightSchema],
 }, {
   toJSON: {
     transform: (doc, ret) => {

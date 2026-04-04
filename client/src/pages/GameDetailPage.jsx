@@ -10,8 +10,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import EditIcon from '@mui/icons-material/Edit';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import {
   getGame, getPlayers, updateGame,
@@ -19,6 +22,7 @@ import {
   getPitching,
   getSubstitutions, addSubstitution, deleteSubstitution,
   getLeagues,
+  addHighlight, deleteHighlight,
 } from '../api.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import GameInfoCard from '../components/game/GameInfoCard.jsx';
@@ -41,6 +45,9 @@ export default function GameDetailPage() {
   const [substitutions, setSubstitutions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [highlights, setHighlights] = useState([]);
+  const [highlightInput, setHighlightInput] = useState('');
+  const [highlightSaving, setHighlightSaving] = useState(false);
   const [endGameOpen, setEndGameOpen] = useState(false);
   const [endingSaving, setEndingSaving] = useState(false);
 
@@ -56,6 +63,7 @@ export default function GameDetailPage() {
       .then(([gameRes, playersRes, leaguesRes, oppAtBatsRes, pitchingRes, subsRes]) => {
         const g = gameRes.data || gameRes;
         setGame(g);
+        setHighlights(g.highlights || []);
         setLeagues(leaguesRes.data || []);
         setAtBats(g.atBats || []);
         setPlayers(playersRes.data || []);
@@ -87,6 +95,30 @@ export default function GameDetailPage() {
       console.error(e);
     }
     setEndingSaving(false);
+  };
+
+  const handleHighlightAdd = async () => {
+    const text = highlightInput.trim();
+    if (!text) return;
+    setHighlightSaving(true);
+    try {
+      const res = await addHighlight(id, text);
+      setHighlights(prev => [...prev, res.data]);
+      setHighlightInput('');
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setHighlightSaving(false);
+    }
+  };
+
+  const handleHighlightDelete = async (highlightId) => {
+    try {
+      await deleteHighlight(id, highlightId);
+      setHighlights(prev => prev.filter(h => h.id !== highlightId));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleSubstitutionAdded = async (data) => {
@@ -164,6 +196,50 @@ export default function GameDetailPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* 특별 기록 (하이라이트) */}
+      <Box sx={{ px: 2, pb: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1 }}>
+          <EmojiEventsIcon sx={{ fontSize: 16, color: 'warning.main' }} />
+          <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>특별 기록</Typography>
+        </Box>
+        {highlights.length > 0 && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1 }}>
+            {highlights.map((h) => (
+              <Box key={h.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, bgcolor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 1.5, px: 1.25, py: 0.6 }}>
+                <Typography sx={{ fontSize: '0.8rem', flex: 1, color: '#78350f', lineHeight: 1.4 }}>
+                  ⭐ {h.text}
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#a16207', flexShrink: 0, fontSize: '0.65rem' }}>{h.createdAt}</Typography>
+                <IconButton size="small" onClick={() => handleHighlightDelete(h.id)} sx={{ p: 0.25, color: '#a16207' }}>
+                  <DeleteIcon sx={{ fontSize: 14 }} />
+                </IconButton>
+              </Box>
+            ))}
+          </Box>
+        )}
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <TextField
+            size="small"
+            fullWidth
+            placeholder="예: 김철수 첫 안타, 첫 승리투수"
+            value={highlightInput}
+            onChange={(e) => setHighlightInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleHighlightAdd()}
+            inputProps={{ maxLength: 80 }}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+          />
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleHighlightAdd}
+            disabled={highlightSaving || !highlightInput.trim()}
+            sx={{ flexShrink: 0, minWidth: 48, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+          >
+            추가
+          </Button>
+        </Box>
+      </Box>
 
       <Tabs
         value={tab}

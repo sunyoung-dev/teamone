@@ -10,6 +10,7 @@ import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import AddIcon from '@mui/icons-material/Add';
 import SportsBaseballIcon from '@mui/icons-material/SportsBaseball';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
 import { getGames, getLeagues } from '../api.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
@@ -62,6 +63,18 @@ function GameCard({ game, leagueName, onClick }) {
               </Typography>
             )}
           </Box>
+          {game.highlights?.length > 0 && (
+            <Box sx={{ mt: 0.75, display: 'flex', flexDirection: 'column', gap: 0.35 }}>
+              {game.highlights.map((h) => (
+                <Box key={h.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <EmojiEventsIcon sx={{ fontSize: 12, color: 'warning.main', flexShrink: 0 }} />
+                  <Typography variant="caption" sx={{ color: '#78350f', fontSize: '0.72rem', lineHeight: 1.3 }}>
+                    {h.text}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
         </CardContent>
       </CardActionArea>
     </Card>

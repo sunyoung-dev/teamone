@@ -8,6 +8,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
@@ -222,7 +223,7 @@ export default function GameDetailPage() {
           <TextField
             size="small"
             fullWidth
-            placeholder="예: 김철수 첫 안타, 첫 승리투수"
+            placeholder="예: 전난주 첫 안타, 첫 승리투수"
             value={highlightInput}
             onChange={(e) => setHighlightInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleHighlightAdd()}

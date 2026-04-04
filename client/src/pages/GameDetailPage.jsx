@@ -27,7 +27,6 @@ import LineupTab from '../components/game/LineupTab.jsx';
 import AtBatsTab from '../components/game/AtBatsTab.jsx';
 import OpponentTab from '../components/game/OpponentTab.jsx';
 import PitchingTab from '../components/game/PitchingTab.jsx';
-import InningEventsTab from '../components/scorecard/InningEventsTab.jsx';
 import ScoreCardGrid from '../components/scorecard/ScoreCardGrid.jsx';
 
 export default function GameDetailPage() {
@@ -179,7 +178,6 @@ export default function GameDetailPage() {
       >
         <Tab label="라인업" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
         <Tab label="타석 기록" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
-        <Tab label={`이닝 이벤트${inningEvents.length > 0 ? ` (${inningEvents.length})` : ''}`} sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
         <Tab label="스코어카드" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
         <Tab label="투수 기록" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
         <Tab label="상대팀" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
@@ -213,20 +211,12 @@ export default function GameDetailPage() {
           onAtBatAdded={(ab) => setAtBats((prev) => [...prev, ab])}
           onAtBatDeleted={(abId) => setAtBats((prev) => prev.filter((ab) => ab.id !== abId))}
           onAtBatUpdated={(ab) => setAtBats((prev) => prev.map((a) => a.id === ab.id ? ab : a))}
+          inningEvents={inningEvents}
+          setInningEvents={setInningEvents}
         />
       )}
 
       {tab === 2 && (
-        <InningEventsTab
-          gameId={id}
-          events={inningEvents}
-          setEvents={setInningEvents}
-          players={players}
-          maxInning={game.innings || 9}
-        />
-      )}
-
-      {tab === 3 && (
         <Box>
           <Box sx={{ px: 2, pt: 1.5, pb: 0.5 }}>
             <Typography variant="caption" color="text.disabled">
@@ -242,7 +232,7 @@ export default function GameDetailPage() {
         </Box>
       )}
 
-      {tab === 4 && (
+      {tab === 3 && (
         <PitchingTab
           gameId={id}
           game={game}
@@ -254,7 +244,7 @@ export default function GameDetailPage() {
         />
       )}
 
-      {tab === 5 && (
+      {tab === 4 && (
         <OpponentTab
           gameId={id}
           game={game}

@@ -7,13 +7,16 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
-import { addAtBat, deleteAtBat } from '../../api.js';
+import EditIcon from '@mui/icons-material/Edit';
+import { addAtBat, deleteAtBat, addInningEvent, updateInningEvent, deleteInningEvent } from '../../api.js';
 import EnhancedAtBatModal from '../scorecard/EnhancedAtBatModal.jsx';
+import InningEventModal from '../scorecard/InningEventModal.jsx';
 import RunnerEventDialog, { BASE_LABELS } from './RunnerEventDialog.jsx';
-import { RESULT_CODES, RESULT_TYPE_COLORS, HIT_TYPES } from '../../utils/constants.js';
+import { RESULT_CODES, RESULT_TYPE_COLORS, HIT_TYPES, INNING_EVENT_TYPES } from '../../utils/constants.js';
 import { getEffectiveLineup } from '../../utils/lineup.js';
 
 function ResultBadge({ result }) {
@@ -44,7 +47,6 @@ function BallCountBadge({ balls, strikes, fouls, pitches, result }) {
         <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: '"Roboto Mono", monospace' }}>1구</Typography>
       ) : (
         <>
-          {/* 볼 도트 */}
           <Box sx={{ display: 'flex', gap: 0.3 }}>
             {Array.from({ length: 3 }, (_, i) => (
               <Box key={i} sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: i < (balls ?? 0) ? '#1565c0' : '#dbeafe' }} />
@@ -136,7 +138,6 @@ function AtBatRow({ atBat, player, onDelete, onRunnerEdit }) {
             <Typography variant="caption" color="text.secondary" component="span">
               {info?.label ?? atBat.result}{atBat.note ? ` · ${atBat.note}` : ''}{atBat.rbi > 0 ? ` · 타점 ${atBat.rbi}` : ''}
             </Typography>
-            {/* 기록원 확장 정보 */}
             {(atBat.hitType || atBat.hitDirection || (atBat.fielders?.length > 0)) && (
               <Box component="span" sx={{ display: 'flex', gap: 0.4, flexWrap: 'wrap', mt: 0.25 }}>
                 {atBat.hitType && (
@@ -169,11 +170,52 @@ function AtBatRow({ atBat, player, onDelete, onRunnerEdit }) {
   );
 }
 
-export default function AtBatsTab({ gameId, game, players, atBats, substitutions, onAtBatAdded, onAtBatDeleted, onAtBatUpdated }) {
+// 이닝 이벤트 한 줄 표시
+function InningEventRow({ event, players, onEdit, onDelete }) {
+  const typeInfo = INNING_EVENT_TYPES[event.type] || { code: event.type, label: event.type, color: '#666', bg: '#eee' };
+  const pitcher = players.find(p => (p.id || p._id) === event.pitcherId);
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+      <Box sx={{
+        minWidth: 34, height: 34, borderRadius: 1,
+        bgcolor: typeInfo.bg, border: `2px solid ${typeInfo.color}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, color: typeInfo.color, fontFamily: '"Roboto Mono", monospace', lineHeight: 1 }}>
+          {typeInfo.code}
+        </Typography>
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{typeInfo.label}</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1 }}>
+          {event.runnerName && `${event.runnerName} `}
+          {event.fromBase != null && event.toBase != null && `${event.fromBase}루→${event.toBase === 4 ? '홈' : event.toBase === 0 ? '아웃' : `${event.toBase}루`}`}
+          {pitcher && ` · 투수: ${pitcher.name}`}
+          {event.note && ` · ${event.note}`}
+        </Typography>
+      </Box>
+      <IconButton size="small" onClick={() => onEdit(event)} sx={{ color: 'text.secondary' }}>
+        <EditIcon sx={{ fontSize: 15 }} />
+      </IconButton>
+      <IconButton size="small" onClick={() => onDelete(event.id)} sx={{ color: 'error.light' }}>
+        <DeleteIcon sx={{ fontSize: 15 }} />
+      </IconButton>
+    </Box>
+  );
+}
+
+export default function AtBatsTab({
+  gameId, game, players, atBats, substitutions,
+  onAtBatAdded, onAtBatDeleted, onAtBatUpdated,
+  inningEvents, setInningEvents,
+}) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedInning, setSelectedInning] = useState(1);
   const [selectedPlayerId, setSelectedPlayerId] = useState('');
   const [runnerDialogAtBat, setRunnerDialogAtBat] = useState(null);
+  const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [savingEvent, setSavingEvent] = useState(false);
 
   const playerMap = Object.fromEntries((players || []).map((p) => [p.id, p]));
   const maxInning = game?.innings || 9;
@@ -191,6 +233,7 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
   );
 
   const inningAtBats = atBats.filter((ab) => ab.inning === selectedInning);
+  const inningEventsForInning = (inningEvents || []).filter((ev) => ev.inning === selectedInning);
 
   const playerInningResults = {};
   inningAtBats.forEach((ab) => {
@@ -230,8 +273,38 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
     }
   };
 
+  // 이닝 이벤트 핸들러
+  const handleEventConfirm = async (data) => {
+    setSavingEvent(true);
+    try {
+      if (editingEvent) {
+        const res = await updateInningEvent(gameId, editingEvent.id, data);
+        setInningEvents(prev => prev.map(ev => ev.id === editingEvent.id ? res.data : ev));
+      } else {
+        const res = await addInningEvent(gameId, data);
+        setInningEvents(prev => [...prev, res.data]);
+      }
+      setEventModalOpen(false);
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setSavingEvent(false);
+    }
+  };
+
+  const handleEventDelete = async (eventId) => {
+    if (!window.confirm('이 이벤트를 삭제할까요?')) return;
+    try {
+      await deleteInningEvent(gameId, eventId);
+      setInningEvents(prev => prev.filter(ev => ev.id !== eventId));
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
   return (
     <Box>
+      {/* 이닝 선택 */}
       <Box sx={{ display: 'flex', gap: 0.75, p: 2, pb: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
         <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', mr: 0.5 }}>이닝</Typography>
         {Array.from({ length: maxInning }, (_, i) => i + 1).map((n) => (
@@ -248,6 +321,7 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
 
       <Divider />
 
+      {/* 라인업 타자 선택 */}
       {effectiveLineupEntries.length > 0 ? (
         <Box sx={{ px: 2, pt: 1.5, pb: 1 }}>
           <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', mb: 1, display: 'block' }}>
@@ -322,13 +396,14 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
 
       <Divider sx={{ mt: 1 }} />
 
+      {/* 타석 기록 목록 */}
       <Box sx={{ px: 2, pt: 1 }}>
         <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-          {selectedInning}회 기록 ({inningAtBats.length}타석)
+          {selectedInning}회 타석 기록 ({inningAtBats.length}타석)
         </Typography>
       </Box>
       {inningAtBats.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 3 }}>
+        <Box sx={{ textAlign: 'center', py: 2 }}>
           <Typography variant="body2" color="text.secondary">아직 기록이 없어요</Typography>
         </Box>
       ) : (
@@ -347,6 +422,44 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
         </List>
       )}
 
+      <Divider sx={{ mt: 1 }} />
+
+      {/* 이닝 이벤트 섹션 */}
+      <Box sx={{ px: 2, pt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+          {selectedInning}회 이닝 이벤트 ({inningEventsForInning.length})
+        </Typography>
+        <Button
+          size="small"
+          startIcon={<AddIcon sx={{ fontSize: 14 }} />}
+          onClick={() => { setEditingEvent(null); setEventModalOpen(true); }}
+          sx={{ fontSize: '0.72rem', py: 0.25, px: 1 }}
+        >
+          이벤트 추가
+        </Button>
+      </Box>
+
+      {inningEventsForInning.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 1.5 }}>
+          <Typography variant="caption" color="text.disabled">
+            도루·폭투·보크 등을 추가하세요
+          </Typography>
+        </Box>
+      ) : (
+        <Box sx={{ mt: 0.5 }}>
+          {inningEventsForInning.map((ev) => (
+            <InningEventRow
+              key={ev.id}
+              event={ev}
+              players={players}
+              onEdit={(e) => { setEditingEvent(e); setEventModalOpen(true); }}
+              onDelete={handleEventDelete}
+            />
+          ))}
+        </Box>
+      )}
+
+      {/* 모달들 */}
       <EnhancedAtBatModal
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
@@ -368,6 +481,16 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
           onAtBatUpdated?.(updated);
           setRunnerDialogAtBat(null);
         }}
+      />
+
+      <InningEventModal
+        open={eventModalOpen}
+        onClose={() => setEventModalOpen(false)}
+        onConfirm={handleEventConfirm}
+        maxInning={maxInning}
+        players={players}
+        initialData={editingEvent}
+        defaultInning={selectedInning}
       />
     </Box>
   );

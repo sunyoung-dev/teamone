@@ -52,9 +52,10 @@ export default function InningEventModal({
   maxInning = 9,
   players = [],
   initialData = null,
+  defaultInning = 1,
 }) {
   const [type, setType] = useState('SB');
-  const [inning, setInning] = useState(1);
+  const [inning, setInning] = useState(defaultInning);
   const [runnerId, setRunnerId] = useState('');
   const [runnerName, setRunnerName] = useState('');
   const [pitcherId, setPitcherId] = useState('');
@@ -77,7 +78,7 @@ export default function InningEventModal({
         setNote(initialData.note || '');
       } else {
         setType('SB');
-        setInning(1);
+        setInning(defaultInning);
         setRunnerId('');
         setRunnerName('');
         setPitcherId('');
@@ -87,7 +88,7 @@ export default function InningEventModal({
         setNote('');
       }
     }
-  }, [open]);
+  }, [open, defaultInning]);
 
   const handleTypeChange = (newType) => {
     setType(newType);

@@ -16,8 +16,9 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import EditIcon from '@mui/icons-material/Edit';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
-import { getPlayer, getPlayerStats } from '../api.js';
+import { getPlayer, getPlayerStats, getPlayerHighlights } from '../api.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import { POSITION_MAP, BATTING_HAND_MAP } from '../utils/constants.js';
 import { formatAvg, formatOps } from '../utils/statsCalculator.js';
@@ -48,14 +49,20 @@ export default function PlayerDetailPage() {
   const navigate = useNavigate();
   const [player, setPlayer] = useState(null);
   const [stats, setStats] = useState(null);
+  const [highlights, setHighlights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    Promise.all([getPlayer(id), getPlayerStats(id)])
-      .then(([playerRes, statsRes]) => {
+    Promise.all([
+      getPlayer(id),
+      getPlayerStats(id),
+      getPlayerHighlights(id).catch(() => ({ data: [] })),
+    ])
+      .then(([playerRes, statsRes, hlRes]) => {
         setPlayer(playerRes.data || playerRes);
         setStats(statsRes.data || statsRes);
+        setHighlights(hlRes.data || []);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -95,6 +102,33 @@ export default function PlayerDetailPage() {
       >
         선수 정보 수정
       </Button>
+
+      {/* 특별 기록 */}
+      {highlights.length > 0 && (
+        <Card sx={{ mb: 2 }}>
+          <CardContent sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1.5 }}>
+              <EmojiEventsIcon sx={{ fontSize: 18, color: 'warning.main' }} />
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>특별 기록</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              {highlights.map((h) => (
+                <Box key={h.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, bgcolor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 1.5, px: 1.25, py: 0.75 }}>
+                  <Typography sx={{ fontSize: '1rem', lineHeight: 1.4, flexShrink: 0 }}>🎉</Typography>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography sx={{ fontSize: '0.85rem', color: '#78350f', fontWeight: 600, lineHeight: 1.4 }}>
+                      {h.text}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#a16207' }}>
+                      {h.gameDate} vs {h.gameOpponent}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Season stats */}
       {stats && (

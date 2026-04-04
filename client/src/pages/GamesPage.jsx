@@ -67,9 +67,9 @@ function GameCard({ game, leagueName, onClick }) {
             <Box sx={{ mt: 0.75, display: 'flex', flexDirection: 'column', gap: 0.35 }}>
               {game.highlights.map((h) => (
                 <Box key={h.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <EmojiEventsIcon sx={{ fontSize: 12, color: 'warning.main', flexShrink: 0 }} />
+                  <Typography sx={{ fontSize: 12, lineHeight: 1, flexShrink: 0 }}>🎉</Typography>
                   <Typography variant="caption" sx={{ color: '#78350f', fontSize: '0.72rem', lineHeight: 1.3 }}>
-                    {h.text}
+                    {h.playerName && <strong>{h.playerName} </strong>}{h.text}
                   </Typography>
                 </Box>
               ))}

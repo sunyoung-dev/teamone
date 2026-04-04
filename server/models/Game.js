@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
 
 const highlightSchema = new mongoose.Schema({
-  id:        { type: String, required: true },
-  text:      { type: String, required: true },
-  createdAt: { type: String, default: () => new Date().toISOString().slice(0, 10) },
+  id:         { type: String, required: true },
+  text:       { type: String, required: true },
+  playerId:   { type: String, default: null }, // 관련 선수 ID (선택)
+  playerName: { type: String, default: null }, // 표시용 선수 이름
+  createdAt:  { type: String, default: () => new Date().toISOString().slice(0, 10) },
 }, { _id: false });
 
 const lineupEntrySchema = new mongoose.Schema({

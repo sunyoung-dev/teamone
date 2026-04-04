@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Player = require('../models/Player');
+const Game = require('../models/Game');
 const nextId = require('../utils/nextId');
 
 const VALID_POSITIONS = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'DH'];
@@ -140,6 +141,30 @@ router.put('/:id', async (req, res, next) => {
 
     await player.save();
     res.json({ success: true, data: player });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/players/:id/highlights - 해당 선수의 모든 특별 기록 (전 경기)
+router.get('/:id/highlights', async (req, res, next) => {
+  try {
+    const games = await Game.find({ 'highlights.playerId': req.params.id }, { _id: 1, date: 1, opponent: 1, highlights: 1 }).lean();
+    const result = [];
+    for (const game of games) {
+      for (const h of (game.highlights || [])) {
+        if (h.playerId === req.params.id) {
+          result.push({
+            ...h,
+            gameId: String(game._id),
+            gameDate: game.date,
+            gameOpponent: game.opponent,
+          });
+        }
+      }
+    }
+    result.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    res.json({ success: true, data: result });
   } catch (err) {
     next(err);
   }

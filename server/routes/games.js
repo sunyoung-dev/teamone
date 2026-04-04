@@ -281,19 +281,21 @@ router.post('/:id/highlights', async (req, res, next) => {
     const game = await Game.findById(req.params.id);
     if (!game) return res.status(404).json({ success: false, error: { code: 'GAME_NOT_FOUND', message: '경기를 찾을 수 없습니다' } });
 
-    const { text } = req.body;
+    const { text, playerId, playerName } = req.body;
     if (!text || !String(text).trim()) {
       return res.status(400).json({ success: false, error: { code: 'INVALID_REQUEST', message: 'text 필드가 필요합니다' } });
     }
 
-    const existing = game.highlights || [];
-    const maxNum = existing.reduce((max, h) => {
+    if (!game.highlights) game.highlights = [];
+    const maxNum = game.highlights.reduce((max, h) => {
       const n = parseInt(String(h.id).replace('hl', ''), 10);
       return isNaN(n) ? max : Math.max(max, n);
     }, 0);
     const newHighlight = {
       id: `hl${String(maxNum + 1).padStart(3, '0')}`,
       text: String(text).trim(),
+      playerId: playerId || null,
+      playerName: playerName ? String(playerName) : null,
       createdAt: new Date().toISOString().slice(0, 10),
     };
     game.highlights.push(newHighlight);

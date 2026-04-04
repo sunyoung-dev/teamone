@@ -9,6 +9,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
@@ -48,6 +50,7 @@ export default function GameDetailPage() {
   const [error, setError] = useState(null);
   const [highlights, setHighlights] = useState([]);
   const [highlightInput, setHighlightInput] = useState('');
+  const [highlightPlayerId, setHighlightPlayerId] = useState('');
   const [highlightSaving, setHighlightSaving] = useState(false);
   const [endGameOpen, setEndGameOpen] = useState(false);
   const [endingSaving, setEndingSaving] = useState(false);
@@ -103,9 +106,17 @@ export default function GameDetailPage() {
     if (!text) return;
     setHighlightSaving(true);
     try {
-      const res = await addHighlight(id, text);
+      const selectedPlayer = highlightPlayerId
+        ? players.find(p => p.id === highlightPlayerId)
+        : null;
+      const res = await addHighlight(id, {
+        text,
+        playerId: selectedPlayer?.id || null,
+        playerName: selectedPlayer?.name || null,
+      });
       setHighlights(prev => [...prev, res.data]);
       setHighlightInput('');
+      setHighlightPlayerId('');
     } catch (e) {
       console.error(e);
     } finally {
@@ -209,7 +220,7 @@ export default function GameDetailPage() {
             {highlights.map((h) => (
               <Box key={h.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, bgcolor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 1.5, px: 1.25, py: 0.6 }}>
                 <Typography sx={{ fontSize: '0.8rem', flex: 1, color: '#78350f', lineHeight: 1.4 }}>
-                  ⭐ {h.text}
+                  🎉 {h.playerName && <strong>{h.playerName} </strong>}{h.text}
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#a16207', flexShrink: 0, fontSize: '0.65rem' }}>{h.createdAt}</Typography>
                 <IconButton size="small" onClick={() => handleHighlightDelete(h.id)} sx={{ p: 0.25, color: '#a16207' }}>
@@ -219,26 +230,49 @@ export default function GameDetailPage() {
             ))}
           </Box>
         )}
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <TextField
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+          <Select
             size="small"
-            fullWidth
-            placeholder="예: 전난주 첫 안타, 첫 승리투수"
-            value={highlightInput}
-            onChange={(e) => setHighlightInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleHighlightAdd()}
-            inputProps={{ maxLength: 80 }}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
-          />
-          <Button
-            variant="contained"
-            size="small"
-            onClick={handleHighlightAdd}
-            disabled={highlightSaving || !highlightInput.trim()}
-            sx={{ flexShrink: 0, minWidth: 48, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+            displayEmpty
+            value={highlightPlayerId}
+            onChange={(e) => setHighlightPlayerId(e.target.value)}
+            sx={{ borderRadius: 1.5 }}
           >
-            추가
-          </Button>
+            <MenuItem value=""><em>선수 선택 (선택사항)</em></MenuItem>
+            {(game.lineup || [])
+              .map(e => players.find(p => p.id === e.playerId))
+              .filter(Boolean)
+              .sort((a, b) => {
+                const ao = (game.lineup || []).find(e => e.playerId === a.id)?.battingOrder ?? 99;
+                const bo = (game.lineup || []).find(e => e.playerId === b.id)?.battingOrder ?? 99;
+                return ao - bo;
+              })
+              .map(p => (
+                <MenuItem key={p.id} value={p.id}>#{p.number} {p.name}</MenuItem>
+              ))
+            }
+          </Select>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <TextField
+              size="small"
+              fullWidth
+              placeholder="예: 첫 안타, 첫 승리투수"
+              value={highlightInput}
+              onChange={(e) => setHighlightInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleHighlightAdd()}
+              inputProps={{ maxLength: 80 }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
+            />
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleHighlightAdd}
+              disabled={highlightSaving || !highlightInput.trim()}
+              sx={{ flexShrink: 0, minWidth: 48, bgcolor: 'warning.main', '&:hover': { bgcolor: 'warning.dark' } }}
+            >
+              추가
+            </Button>
+          </Box>
         </Box>
       </Box>
 

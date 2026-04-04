@@ -19,7 +19,6 @@ import {
   getPitching,
   getSubstitutions, addSubstitution, deleteSubstitution,
   getLeagues,
-  getInningEvents,
 } from '../api.js';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import GameInfoCard from '../components/game/GameInfoCard.jsx';
@@ -40,7 +39,6 @@ export default function GameDetailPage() {
   const [opponentAtBats, setOpponentAtBats] = useState([]);
   const [pitchingRecords, setPitchingRecords] = useState([]);
   const [substitutions, setSubstitutions] = useState([]);
-  const [inningEvents, setInningEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [endGameOpen, setEndGameOpen] = useState(false);
@@ -54,9 +52,8 @@ export default function GameDetailPage() {
       getOpponentAtBats(id).catch(() => ({ atBats: [] })),
       getPitching(id).catch(() => ({ records: [] })),
       getSubstitutions(id).catch(() => ({ data: [] })),
-      getInningEvents(id).catch(() => ({ data: [] })),
     ])
-      .then(([gameRes, playersRes, leaguesRes, oppAtBatsRes, pitchingRes, subsRes, eventsRes]) => {
+      .then(([gameRes, playersRes, leaguesRes, oppAtBatsRes, pitchingRes, subsRes]) => {
         const g = gameRes.data || gameRes;
         setGame(g);
         setLeagues(leaguesRes.data || []);
@@ -71,7 +68,6 @@ export default function GameDetailPage() {
         setSubstitutions(
           subsRes.data || subsRes.substitutions || (Array.isArray(subsRes) ? subsRes : [])
         );
-        setInningEvents(eventsRes.data || []);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -211,8 +207,6 @@ export default function GameDetailPage() {
           onAtBatAdded={(ab) => setAtBats((prev) => [...prev, ab])}
           onAtBatDeleted={(abId) => setAtBats((prev) => prev.filter((ab) => ab.id !== abId))}
           onAtBatUpdated={(ab) => setAtBats((prev) => prev.map((a) => a.id === ab.id ? ab : a))}
-          inningEvents={inningEvents}
-          setInningEvents={setInningEvents}
         />
       )}
 

@@ -15,6 +15,8 @@ const opponentLineupEntrySchema = new mongoose.Schema({
 }, { _id: false });
 
 const runnerEventSchema = new mongoose.Schema({
+  type:       { type: String, default: null }, // 'SB'|'CS'|'WP'|'PB'|'BK'|'OB'|'PK'|'E'|null
+  runnerId:   { type: String, default: null }, // 주자 선수 ID (통계 집계용)
   runnerName: { type: String, required: true },
   fromBase:   { type: Number, required: true }, // 1, 2, 3
   toBase:     { type: Number, required: true }, // 0=아웃, 1, 2, 3, 4=홈인

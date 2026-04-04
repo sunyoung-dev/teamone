@@ -10,7 +10,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Typography from '@mui/material/Typography';
@@ -26,21 +25,53 @@ export const BASE_LABELS = { 1: '1루', 2: '2루', 3: '3루', 4: '홈인', 0: '�
 const FROM_OPTIONS = [1, 2, 3];
 const TO_OPTIONS = { 1: [2, 3, 4, 0], 2: [3, 4, 0], 3: [4, 0] };
 
+// 주루 이벤트 타입 — 이닝 이벤트에서 가져온 분류
+const RUNNER_EVENT_TYPES = [
+  { code: null,  label: '없음',   color: '#9e9e9e', bg: '#f5f5f5' },
+  { code: 'SB',  label: '도루',   color: '#1565c0', bg: '#e3f2fd' },
+  { code: 'CS',  label: '도루자', color: '#b71c1c', bg: '#ffebee' },
+  { code: 'WP',  label: '폭투',   color: '#e65100', bg: '#fff3e0' },
+  { code: 'PB',  label: '포일',   color: '#6a1b9a', bg: '#f3e5f5' },
+  { code: 'BK',  label: '보크',   color: '#00695c', bg: '#e0f2f1' },
+  { code: 'OB',  label: '주루사', color: '#bf360c', bg: '#fbe9e7' },
+  { code: 'PK',  label: '견제사', color: '#4e342e', bg: '#efebe9' },
+  { code: 'E',   label: '실책',   color: '#558b2f', bg: '#f1f8e9' },
+];
+
+function EventTypeBadge({ type }) {
+  const info = RUNNER_EVENT_TYPES.find(t => t.code === type);
+  if (!info || !type) return null;
+  return (
+    <Box sx={{
+      display: 'inline-flex', alignItems: 'center',
+      px: 0.75, py: 0.1, borderRadius: 0.75,
+      bgcolor: info.bg, border: `1px solid ${info.color}`,
+    }}>
+      <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, color: info.color, fontFamily: '"Roboto Mono", monospace', lineHeight: 1 }}>
+        {info.code}
+      </Typography>
+    </Box>
+  );
+}
+
 export default function RunnerEventDialog({ open, onClose, atBat, gameId, players, lineup, onSaved }) {
   const [events, setEvents] = useState([]);
+  const [newType, setNewType] = useState(null);
+  const [newRunnerId, setNewRunnerId] = useState('');
   const [newName, setNewName] = useState('');
   const [newFrom, setNewFrom] = useState(null);
   const [newTo, setNewTo] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
 
-  // 라인업에 있는 선수만 주자 목록에 표시
   const lineupPlayerIds = new Set((lineup || []).map((e) => e.playerId));
   const lineupPlayers = (players || []).filter((p) => lineupPlayerIds.has(p.id));
 
   useEffect(() => {
     if (open) {
       setEvents(atBat?.runnerEvents ? [...atBat.runnerEvents] : []);
+      setNewType(null);
+      setNewRunnerId('');
       setNewName('');
       setNewFrom(null);
       setNewTo(null);
@@ -52,7 +83,15 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
 
   const handleAdd = () => {
     if (!canAdd) return;
-    setEvents((prev) => [...prev, { runnerName: newName.trim(), fromBase: newFrom, toBase: newTo }]);
+    setEvents((prev) => [...prev, {
+      type: newType || null,
+      runnerId: newRunnerId || null,
+      runnerName: newName.trim(),
+      fromBase: newFrom,
+      toBase: newTo,
+    }]);
+    setNewType(null);
+    setNewRunnerId('');
     setNewName('');
     setNewFrom(null);
     setNewTo(null);
@@ -81,7 +120,7 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs"
-      PaperProps={{ sx: { borderRadius: 3, mx: 1, maxHeight: '88vh' } }}>
+      PaperProps={{ sx: { borderRadius: 3, mx: 1, maxHeight: '92vh' } }}>
       <DialogTitle sx={{ pb: 1, pt: 2, px: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>주루 기록</Typography>
@@ -96,6 +135,7 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
         {saveError && (
           <Alert severity="error" sx={{ mb: 1.5, mt: 1 }}>{saveError}</Alert>
         )}
+
         {/* 기록된 주루 이벤트 목록 */}
         {events.length > 0 ? (
           <Box sx={{ mb: 1.5 }}>
@@ -105,6 +145,7 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
                 py: 0.75, borderBottom: '1px solid', borderColor: 'divider',
               }}>
                 <DirectionsRunIcon sx={{ fontSize: 15, color: 'text.disabled', flexShrink: 0 }} />
+                <EventTypeBadge type={ev.type} />
                 <Typography variant="body2" sx={{ flex: 1, fontWeight: 600 }}>{ev.runnerName}</Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
                   {BASE_LABELS[ev.fromBase]} →
@@ -132,13 +173,52 @@ export default function RunnerEventDialog({ open, onClose, atBat, gameId, player
           주루 이벤트 추가
         </Typography>
 
-        {/* 주자 선택 (라인업 선수만) */}
+        {/* 이벤트 타입 선택 */}
+        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', mb: 0.5, display: 'block' }}>
+          이벤트 종류
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1.5 }}>
+          {RUNNER_EVENT_TYPES.map((t) => {
+            const selected = newType === t.code;
+            return (
+              <Box
+                key={String(t.code)}
+                onClick={() => setNewType(selected ? null : t.code)}
+                sx={{
+                  px: 1, py: 0.4, borderRadius: 1, cursor: 'pointer',
+                  bgcolor: selected ? t.color : t.bg,
+                  border: `1.5px solid ${t.color}`,
+                  display: 'flex', alignItems: 'center', gap: 0.4,
+                  transition: 'all 0.1s',
+                }}
+              >
+                {t.code && (
+                  <Typography sx={{ fontFamily: '"Roboto Mono", monospace', fontWeight: 800, fontSize: '0.7rem', color: selected ? '#fff' : t.color, lineHeight: 1 }}>
+                    {t.code}
+                  </Typography>
+                )}
+                <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: selected ? '#fff' : t.color, lineHeight: 1 }}>
+                  {t.label}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+
+        {/* 주자 선택 */}
         <FormControl fullWidth size="small" sx={{ mb: 1.5 }}>
-          <InputLabel>주자</InputLabel>
-          <Select value={newName} label="주자" onChange={(e) => setNewName(e.target.value)}>
-            <MenuItem value=""><em>선택</em></MenuItem>
+          <Select
+            value={newRunnerId}
+            onChange={(e) => {
+              setNewRunnerId(e.target.value);
+              const p = lineupPlayers.find(pl => pl.id === e.target.value);
+              if (p) setNewName(p.name);
+            }}
+            displayEmpty
+          >
+            <MenuItem value=""><em>주자 선택</em></MenuItem>
             {lineupPlayers.map((p) => (
-              <MenuItem key={p.id} value={p.name}>#{p.number} {p.name}</MenuItem>
+              <MenuItem key={p.id} value={p.id}>#{p.number} {p.name}</MenuItem>
             ))}
           </Select>
         </FormControl>

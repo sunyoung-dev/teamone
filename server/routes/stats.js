@@ -296,6 +296,7 @@ router.get('/pitching', async (req, res, next) => {
 });
 
 // GET /api/stats/baserunning - G, SBA, SB, CS, SB%, OOB, PKO
+// 집계 소스: atBats[].runnerEvents[].type (SB/CS/OB/PK)
 router.get('/baserunning', async (req, res, next) => {
   try {
     const [players, games] = await Promise.all([
@@ -313,18 +314,20 @@ router.get('/baserunning', async (req, res, next) => {
     for (const game of games) {
       if (season && game.date && !game.date.startsWith(season)) continue;
 
-      for (const ev of (game.inningEvents || [])) {
-        if (!['SB', 'CS', 'OB', 'PK'].includes(ev.type)) continue;
-        const pid = ev.runnerId || nameToId[ev.runnerName] || null;
-        if (!pid) continue;
+      for (const ab of (game.atBats || [])) {
+        for (const ev of (ab.runnerEvents || [])) {
+          if (!['SB', 'CS', 'OB', 'PK'].includes(ev.type)) continue;
+          const pid = ev.runnerId || nameToId[ev.runnerName] || null;
+          if (!pid) continue;
 
-        if (!brByPlayer[pid]) brByPlayer[pid] = { sb: 0, cs: 0, oob: 0, pko: 0, gameSet: new Set() };
-        const stat = brByPlayer[pid];
-        stat.gameSet.add(String(game._id));
-        if (ev.type === 'SB') stat.sb++;
-        if (ev.type === 'CS') stat.cs++;
-        if (ev.type === 'OB') stat.oob++;
-        if (ev.type === 'PK') stat.pko++;
+          if (!brByPlayer[pid]) brByPlayer[pid] = { sb: 0, cs: 0, oob: 0, pko: 0, gameSet: new Set() };
+          const stat = brByPlayer[pid];
+          stat.gameSet.add(String(game._id));
+          if (ev.type === 'SB') stat.sb++;
+          if (ev.type === 'CS') stat.cs++;
+          if (ev.type === 'OB') stat.oob++;
+          if (ev.type === 'PK') stat.pko++;
+        }
       }
     }
 

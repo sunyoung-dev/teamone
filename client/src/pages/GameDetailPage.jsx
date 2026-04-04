@@ -19,14 +19,16 @@ import {
   getPitching,
   getSubstitutions, addSubstitution, deleteSubstitution,
   getLeagues,
+  getInningEvents,
 } from '../api.js';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import GameInfoCard from '../components/game/GameInfoCard.jsx';
 import LineupTab from '../components/game/LineupTab.jsx';
 import AtBatsTab from '../components/game/AtBatsTab.jsx';
 import OpponentTab from '../components/game/OpponentTab.jsx';
 import PitchingTab from '../components/game/PitchingTab.jsx';
+import InningEventsTab from '../components/scorecard/InningEventsTab.jsx';
+import ScoreCardGrid from '../components/scorecard/ScoreCardGrid.jsx';
 
 export default function GameDetailPage() {
   const { id } = useParams();
@@ -39,6 +41,7 @@ export default function GameDetailPage() {
   const [opponentAtBats, setOpponentAtBats] = useState([]);
   const [pitchingRecords, setPitchingRecords] = useState([]);
   const [substitutions, setSubstitutions] = useState([]);
+  const [inningEvents, setInningEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [endGameOpen, setEndGameOpen] = useState(false);
@@ -52,8 +55,9 @@ export default function GameDetailPage() {
       getOpponentAtBats(id).catch(() => ({ atBats: [] })),
       getPitching(id).catch(() => ({ records: [] })),
       getSubstitutions(id).catch(() => ({ data: [] })),
+      getInningEvents(id).catch(() => ({ data: [] })),
     ])
-      .then(([gameRes, playersRes, leaguesRes, oppAtBatsRes, pitchingRes, subsRes]) => {
+      .then(([gameRes, playersRes, leaguesRes, oppAtBatsRes, pitchingRes, subsRes, eventsRes]) => {
         const g = gameRes.data || gameRes;
         setGame(g);
         setLeagues(leaguesRes.data || []);
@@ -68,6 +72,7 @@ export default function GameDetailPage() {
         setSubstitutions(
           subsRes.data || subsRes.substitutions || (Array.isArray(subsRes) ? subsRes : [])
         );
+        setInningEvents(eventsRes.data || []);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -122,15 +127,6 @@ export default function GameDetailPage() {
           <Button size="small" startIcon={<EditIcon />} onClick={() => navigate(`/games/${id}/edit`)}>
             경기 정보 수정
           </Button>
-          <Button
-            size="small"
-            variant="contained"
-            startIcon={<AssignmentIcon />}
-            onClick={() => navigate(`/games/${id}/scorecard`)}
-            sx={{ bgcolor: '#1565c0', '&:hover': { bgcolor: '#1976d2' } }}
-          >
-            기록원 화면
-          </Button>
           {game.status !== 'final' && (
             <Button size="small" variant="contained" color="secondary" onClick={() => setEndGameOpen(true)}>
               경기 종료
@@ -177,14 +173,16 @@ export default function GameDetailPage() {
       <Tabs
         value={tab}
         onChange={(_, v) => setTab(v)}
-        sx={{ px: 2, borderBottom: 1, borderColor: 'divider' }}
+        sx={{ px: 1, borderBottom: 1, borderColor: 'divider' }}
         variant="scrollable"
-        scrollButtons="auto"
+        scrollButtons={false}
       >
-        <Tab label="라인업" />
-        <Tab label="타석 기록" />
-        <Tab label="상대팀 기록" />
-        <Tab label="투수 기록" />
+        <Tab label="라인업" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
+        <Tab label="타석 기록" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
+        <Tab label={`이닝 이벤트${inningEvents.length > 0 ? ` (${inningEvents.length})` : ''}`} sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
+        <Tab label="스코어카드" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
+        <Tab label="투수 기록" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
+        <Tab label="상대팀" sx={{ fontSize: '0.78rem', minWidth: 0, px: 1.5 }} />
       </Tabs>
 
       {tab === 0 && (
@@ -219,18 +217,32 @@ export default function GameDetailPage() {
       )}
 
       {tab === 2 && (
-        <OpponentTab
+        <InningEventsTab
           gameId={id}
-          game={game}
+          events={inningEvents}
+          setEvents={setInningEvents}
           players={players}
-          opponentAtBats={opponentAtBats}
-          substitutions={substitutions}
-          onOpponentAtBatAdded={(ab) => setOpponentAtBats((prev) => [...prev, ab])}
-          onOpponentAtBatDeleted={(abId) => setOpponentAtBats((prev) => prev.filter((ab) => ab.id !== abId))}
+          maxInning={game.innings || 9}
         />
       )}
 
       {tab === 3 && (
+        <Box>
+          <Box sx={{ px: 2, pt: 1.5, pb: 0.5 }}>
+            <Typography variant="caption" color="text.disabled">
+              셀을 탭하면 상세 정보가 표시됩니다 · 수비수: 포지션 번호
+            </Typography>
+          </Box>
+          <ScoreCardGrid
+            atBats={atBats}
+            players={players}
+            lineup={game.lineup}
+            maxInning={game.innings || 9}
+          />
+        </Box>
+      )}
+
+      {tab === 4 && (
         <PitchingTab
           gameId={id}
           game={game}
@@ -239,6 +251,18 @@ export default function GameDetailPage() {
           opponentAtBats={opponentAtBats}
           onPitchingAdded={(rec) => setPitchingRecords((prev) => [...prev, rec])}
           onPitchingDeleted={(recId) => setPitchingRecords((prev) => prev.filter((r) => r.id !== recId))}
+        />
+      )}
+
+      {tab === 5 && (
+        <OpponentTab
+          gameId={id}
+          game={game}
+          players={players}
+          opponentAtBats={opponentAtBats}
+          substitutions={substitutions}
+          onOpponentAtBatAdded={(ab) => setOpponentAtBats((prev) => [...prev, ab])}
+          onOpponentAtBatDeleted={(abId) => setOpponentAtBats((prev) => prev.filter((ab) => ab.id !== abId))}
         />
       )}
     </Box>

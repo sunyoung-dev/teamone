@@ -196,7 +196,7 @@ router.get('/leaders', async (req, res, next) => {
   }
 });
 
-// GET /api/stats/pitching - pitcher stats for all players across all games
+// GET /api/stats/pitching - pitcher stats (G, W, L, SV, HLD, WPCT, IP, H, HR, BB, HBP, SO, R, ER, WHIP)
 router.get('/pitching', async (req, res, next) => {
   try {
     const [players, games] = await Promise.all([
@@ -206,7 +206,7 @@ router.get('/pitching', async (req, res, next) => {
 
     const { season } = req.query;
 
-    const pitchingByPitcher = {};
+    const pitchingRecordsByPitcher = {};
     const opponentAtBatsByPitcher = {};
     const gamesByPitcher = {};
 
@@ -214,30 +214,26 @@ router.get('/pitching', async (req, res, next) => {
       if (season && game.date && !game.date.startsWith(season)) continue;
 
       const pitcherIdsInGame = new Set();
-
-      // Build inning → pitcherId map from pitching records for auto-attribution
       const inningPitcherMap = {};
+
       for (const record of (game.pitching || [])) {
         const pid = record.pitcherId;
         if (!pid) continue;
-        if (!pitchingByPitcher[pid]) pitchingByPitcher[pid] = [];
-        pitchingByPitcher[pid].push(record);
+        if (!pitchingRecordsByPitcher[pid]) pitchingRecordsByPitcher[pid] = [];
+        pitchingRecordsByPitcher[pid].push(record);
         pitcherIdsInGame.add(pid);
         for (let inn = record.startInning; inn <= record.endInning; inn++) {
           inningPitcherMap[inn] = pid;
         }
       }
 
-      // Lineup pitcher fallback: when no pitching records exist, attribute to P-position player
       const lineupPitcherId = (game.pitching || []).length === 0
         ? ((game.lineup || []).find(e => e.position === 'P')?.playerId || null)
         : null;
 
       for (const oab of (game.opponentAtBats || [])) {
-        // Treat legacy "undefined"/"null" string values as empty
         const rawId = oab.pitcherId;
         const explicitId = (rawId && rawId !== 'undefined' && rawId !== 'null') ? rawId : '';
-        // Use explicit pitcherId → inning-based → lineup pitcher fallback
         const pid = explicitId || inningPitcherMap[oab.inning] || lineupPitcherId;
         if (!pid) continue;
         if (!opponentAtBatsByPitcher[pid]) opponentAtBatsByPitcher[pid] = [];
@@ -251,21 +247,35 @@ router.get('/pitching', async (req, res, next) => {
     }
 
     const statsAll = players.map(player => {
-      const records = pitchingByPitcher[player._id] || [];
-      const oabs = opponentAtBatsByPitcher[player._id] || [];
+      const records = pitchingRecordsByPitcher[player._id] || [];
+      const oabs    = opponentAtBatsByPitcher[player._id] || [];
 
       const ip = records.reduce((sum, r) => {
         const span = (r.endInning || 0) - (r.startInning || 0) + 1;
         return sum + (span > 0 ? span : 0);
       }, 0);
-      const tbf = oabs.length;
-      const h = oabs.filter(oab => ['1H', '2H', '3H', 'HR'].includes(oab.result)).length;
-      const hr = oabs.filter(oab => oab.result === 'HR').length;
-      const so = oabs.filter(oab => oab.result === 'SO').length;
-      const bb = oabs.filter(oab => ['BB', 'HBP'].includes(oab.result)).length;
-      const r = oabs.reduce((sum, oab) => sum + (oab.run || 0), 0);
-      const er = r;
-      const era = ip > 0 ? Math.round((er / ip) * 9 * 100) / 100 : 0;
+
+      const wins   = records.filter(r => r.win).length;
+      const losses = records.filter(r => r.loss).length;
+      const saves  = records.filter(r => r.save).length;
+      const holds  = records.filter(r => r.hold).length;
+      const wpct   = (wins + losses) > 0 ? round3(wins / (wins + losses)) : null;
+
+      const h   = oabs.filter(oab => ['1H', '2H', '3H', 'HR'].includes(oab.result)).length;
+      const hr  = oabs.filter(oab => oab.result === 'HR').length;
+      const so  = oabs.filter(oab => oab.result === 'SO').length;
+      const bb  = oabs.filter(oab => ['BB', 'IBB'].includes(oab.result)).length;
+      const hbp = oabs.filter(oab => oab.result === 'HBP').length;
+      const r   = oabs.reduce((sum, oab) => sum + (oab.run || 0), 0);
+
+      // 자책점: earnedRuns 기록 있으면 합산, 없으면 실점 전체로 간주
+      const erRecorded = records.some(rec => rec.earnedRuns != null);
+      const er = erRecorded
+        ? records.reduce((sum, rec) => sum + (rec.earnedRuns != null ? rec.earnedRuns : 0), 0)
+        : r;
+
+      const era  = ip > 0 ? round3((er / ip) * 9) : 0;
+      const whip = ip > 0 ? round3((bb + h) / ip) : 0;
 
       return {
         playerId: player._id,
@@ -273,17 +283,68 @@ router.get('/pitching', async (req, res, next) => {
         number: player.number,
         position: player.position,
         games: gamesByPitcher[player._id] || 0,
-        ip,
-        tbf,
-        h,
-        hr,
-        so,
-        bb,
-        r,
-        er,
-        era
+        wins, losses, saves, holds, wpct,
+        ip, h, hr, bb, hbp, so, r, er,
+        era, whip,
       };
     });
+
+    res.json({ success: true, data: statsAll });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/stats/baserunning - G, SBA, SB, CS, SB%, OOB, PKO
+router.get('/baserunning', async (req, res, next) => {
+  try {
+    const [players, games] = await Promise.all([
+      Player.find().lean(),
+      Game.find().lean()
+    ]);
+
+    const { season } = req.query;
+
+    const nameToId = {};
+    for (const p of players) nameToId[p.name] = p._id;
+
+    const brByPlayer = {};
+
+    for (const game of games) {
+      if (season && game.date && !game.date.startsWith(season)) continue;
+
+      for (const ev of (game.inningEvents || [])) {
+        if (!['SB', 'CS', 'OB', 'PK'].includes(ev.type)) continue;
+        const pid = ev.runnerId || nameToId[ev.runnerName] || null;
+        if (!pid) continue;
+
+        if (!brByPlayer[pid]) brByPlayer[pid] = { sb: 0, cs: 0, oob: 0, pko: 0, gameSet: new Set() };
+        const stat = brByPlayer[pid];
+        stat.gameSet.add(String(game._id));
+        if (ev.type === 'SB') stat.sb++;
+        if (ev.type === 'CS') stat.cs++;
+        if (ev.type === 'OB') stat.oob++;
+        if (ev.type === 'PK') stat.pko++;
+      }
+    }
+
+    const statsAll = players
+      .map(player => {
+        const stat = brByPlayer[player._id];
+        if (!stat) return null;
+        const { sb, cs, oob, pko, gameSet } = stat;
+        const sba   = sb + cs;
+        const sbPct = sba > 0 ? round3(sb / sba) : null;
+        return {
+          playerId: player._id,
+          playerName: player.name,
+          number: player.number,
+          position: player.position,
+          games: gameSet.size,
+          sb, cs, sba, sbPct, oob, pko,
+        };
+      })
+      .filter(Boolean);
 
     res.json({ success: true, data: statsAll });
   } catch (err) {

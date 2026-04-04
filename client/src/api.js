@@ -101,6 +101,7 @@ export const deleteInningEvent = (gameId, eventId) =>
 
 export const getTeamStats = (params) => api.get('/stats/team', { params });
 export const getLeaders = (params) => api.get('/stats/leaders', { params });
+export const getBaserunningStats = (params) => api.get('/stats/baserunning', { params });
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 

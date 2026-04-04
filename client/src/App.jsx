@@ -20,7 +20,6 @@ const DashboardPage    = lazy(() => import('./pages/DashboardPage.jsx'));
 const GamesPage        = lazy(() => import('./pages/GamesPage.jsx'));
 const GameDetailPage   = lazy(() => import('./pages/GameDetailPage.jsx'));
 const GameFormPage     = lazy(() => import('./pages/GameFormPage.jsx'));
-const ScorecardPage    = lazy(() => import('./pages/ScorecardPage.jsx'));
 const PlayersPage      = lazy(() => import('./pages/PlayersPage.jsx'));
 const PlayerDetailPage = lazy(() => import('./pages/PlayerDetailPage.jsx'));
 const PlayerFormPage   = lazy(() => import('./pages/PlayerFormPage.jsx'));
@@ -58,7 +57,6 @@ function getNavValue(pathname) {
 function getTitle(pathname) {
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
   if (pathname.match(/^\/games\/[^/]+\/edit$/)) return '경기 수정';
-  if (pathname.match(/^\/games\/[^/]+\/scorecard$/)) return '기록원 화면';
   if (pathname.match(/^\/games\/[^/]+$/)) return '경기 상세';
   if (pathname.match(/^\/players\/[^/]+\/edit$/)) return '선수 수정';
   if (pathname.match(/^\/players\/[^/]+$/)) return '선수 상세';
@@ -127,7 +125,6 @@ function AppLayout() {
           <Route path="/games/new" element={<GameFormPage />} />
           <Route path="/games/:id" element={<GameDetailPage />} />
           <Route path="/games/:id/edit" element={<GameFormPage />} />
-          <Route path="/games/:id/scorecard" element={<ScorecardPage />} />
           <Route path="/players" element={<PlayersPage />} />
           <Route path="/players/new" element={<PlayerFormPage />} />
           <Route path="/players/:id" element={<PlayerDetailPage />} />

@@ -55,6 +55,7 @@ export default function InningEventModal({
 }) {
   const [type, setType] = useState('SB');
   const [inning, setInning] = useState(1);
+  const [runnerId, setRunnerId] = useState('');
   const [runnerName, setRunnerName] = useState('');
   const [pitcherId, setPitcherId] = useState('');
   const [fielderPos, setFielderPos] = useState('');
@@ -67,6 +68,7 @@ export default function InningEventModal({
       if (initialData) {
         setType(initialData.type || 'SB');
         setInning(initialData.inning || 1);
+        setRunnerId(initialData.runnerId || '');
         setRunnerName(initialData.runnerName || '');
         setPitcherId(initialData.pitcherId || '');
         setFielderPos(initialData.fielderPos != null ? String(initialData.fielderPos) : '');
@@ -76,6 +78,7 @@ export default function InningEventModal({
       } else {
         setType('SB');
         setInning(1);
+        setRunnerId('');
         setRunnerName('');
         setPitcherId('');
         setFielderPos('');
@@ -99,6 +102,7 @@ export default function InningEventModal({
     onConfirm({
       type,
       inning: Number(inning),
+      runnerId: runnerId || null,
       runnerName: runnerName.trim(),
       pitcherId: pitcherId || null,
       fielderPos: fielderPos !== '' ? Number(fielderPos) : null,
@@ -179,20 +183,40 @@ export default function InningEventModal({
 
         <Divider sx={{ mb: 1.5 }} />
 
-        {/* 주자 이름 */}
+        {/* 주자 선택 (선수 목록 있을 때는 드롭다운, 없으면 텍스트) */}
         {fields.runner && (
           <Box sx={{ mb: 1.25 }}>
             <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', mb: 0.5, display: 'block' }}>
               {type === 'WP' || type === 'PB' || type === 'BK' ? '진루 주자' : '주자'}
             </Typography>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="주자 이름"
-              value={runnerName}
-              onChange={e => setRunnerName(e.target.value)}
-              inputProps={{ maxLength: 20 }}
-            />
+            {players.length > 0 ? (
+              <FormControl fullWidth size="small">
+                <Select
+                  value={runnerId}
+                  onChange={e => {
+                    setRunnerId(e.target.value);
+                    const p = players.find(pl => (pl.id || pl._id) === e.target.value);
+                    if (p) setRunnerName(p.name);
+                  }}
+                  displayEmpty
+                >
+                  <MenuItem value=""><em>선수 선택</em></MenuItem>
+                  {players.map(p => (
+                    <MenuItem key={p.id || p._id} value={p.id || p._id}>
+                      {p.number ? `#${p.number} ` : ''}{p.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            ) : (
+              <TextField
+                fullWidth size="small"
+                placeholder="주자 이름"
+                value={runnerName}
+                onChange={e => setRunnerName(e.target.value)}
+                inputProps={{ maxLength: 20 }}
+              />
+            )}
           </Box>
         )}
 

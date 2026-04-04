@@ -25,6 +25,11 @@ export default function PitchingTab({ gameId, game, players, pitchingRecords, op
   const [startInning, setStartInning] = useState(1);
   const [endInning, setEndInning] = useState(1);
   const [pitchCount, setPitchCount] = useState('');
+  const [win, setWin] = useState(false);
+  const [loss, setLoss] = useState(false);
+  const [save, setSave] = useState(false);
+  const [hold, setHold] = useState(false);
+  const [earnedRuns, setEarnedRuns] = useState('');
   const [adding, setAdding] = useState(false);
 
   const playerMap = Object.fromEntries((players || []).map((p) => [p.id, p]));
@@ -37,6 +42,8 @@ export default function PitchingTab({ gameId, game, players, pitchingRecords, op
       startInning: Number(startInning),
       endInning: Number(endInning),
       pitchCount: pitchCount !== '' ? Number(pitchCount) : null,
+      win, loss, save, hold,
+      earnedRuns: earnedRuns !== '' ? Number(earnedRuns) : null,
     };
     try {
       const res = await addPitching(gameId, newRecord);
@@ -45,6 +52,8 @@ export default function PitchingTab({ gameId, game, players, pitchingRecords, op
       setStartInning(1);
       setEndInning(1);
       setPitchCount('');
+      setWin(false); setLoss(false); setSave(false); setHold(false);
+      setEarnedRuns('');
     } catch (e) {
       console.error(e);
     }
@@ -108,6 +117,44 @@ export default function PitchingTab({ gameId, game, players, pitchingRecords, op
             sx={{ flex: 1 }}
             inputProps={{ min: 0 }}
           />
+          <TextField
+            label="자책점"
+            type="number"
+            value={earnedRuns}
+            onChange={(e) => setEarnedRuns(e.target.value)}
+            size="small"
+            sx={{ flex: 1 }}
+            inputProps={{ min: 0 }}
+          />
+        </Box>
+        {/* 승/패/세이브/홀드 */}
+        <Box sx={{ display: 'flex', gap: 0.75, mb: 1.5, flexWrap: 'wrap' }}>
+          {[
+            { label: '승', val: win, set: setWin, color: '#1b5e20', bg: '#f0fdf4' },
+            { label: '패', val: loss, set: setLoss, color: '#b71c1c', bg: '#fff1f2' },
+            { label: '세이브', val: save, set: setSave, color: '#1565c0', bg: '#eff6ff' },
+            { label: '홀드', val: hold, set: setHold, color: '#6d28d9', bg: '#f5f3ff' },
+          ].map(item => (
+            <Box
+              key={item.label}
+              onClick={() => {
+                // 승/패는 상호 배타적
+                if (item.label === '승' && !win) setLoss(false);
+                if (item.label === '패' && !loss) setWin(false);
+                item.set(!item.val);
+              }}
+              sx={{
+                px: 1.25, py: 0.5, borderRadius: 1.5, cursor: 'pointer',
+                border: `1.5px solid ${item.val ? item.color : '#e2e8f0'}`,
+                bgcolor: item.val ? item.bg : 'white',
+                color: item.val ? item.color : 'text.secondary',
+                fontWeight: 700, fontSize: '0.75rem',
+                userSelect: 'none',
+              }}
+            >
+              {item.label}
+            </Box>
+          ))}
         </Box>
         <Button
           variant="contained"
@@ -139,12 +186,19 @@ export default function PitchingTab({ gameId, game, players, pitchingRecords, op
                   }}
                 >
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                      {pitcher ? `#${pitcher.number} ${pitcher.name}` : rec.pitcherId}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                        {pitcher ? `#${pitcher.number} ${pitcher.name}` : rec.pitcherId}
+                      </Typography>
+                      {rec.win  && <Box sx={{ px: 0.5, py: 0.1, bgcolor: '#f0fdf4', color: '#1b5e20', border: '1px solid #4c8c4a', borderRadius: 0.75, fontSize: '0.6rem', fontWeight: 700 }}>승</Box>}
+                      {rec.loss && <Box sx={{ px: 0.5, py: 0.1, bgcolor: '#fff1f2', color: '#b71c1c', border: '1px solid #e05252', borderRadius: 0.75, fontSize: '0.6rem', fontWeight: 700 }}>패</Box>}
+                      {rec.save && <Box sx={{ px: 0.5, py: 0.1, bgcolor: '#eff6ff', color: '#1565c0', border: '1px solid #4f83cc', borderRadius: 0.75, fontSize: '0.6rem', fontWeight: 700 }}>세이브</Box>}
+                      {rec.hold && <Box sx={{ px: 0.5, py: 0.1, bgcolor: '#f5f3ff', color: '#6d28d9', border: '1px solid #a78bfa', borderRadius: 0.75, fontSize: '0.6rem', fontWeight: 700 }}>홀드</Box>}
+                    </Box>
                     <Typography variant="caption" color="text.secondary">
                       {rec.startInning}회 ~ {rec.endInning}회
                       {rec.pitchCount != null ? ` · ${rec.pitchCount}구` : ''}
+                      {rec.earnedRuns != null ? ` · 자책 ${rec.earnedRuns}` : ''}
                     </Typography>
                   </Box>
                   <IconButton size="small" color="error" onClick={() => handleDelete(rec.id)}>

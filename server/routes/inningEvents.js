@@ -47,7 +47,7 @@ router.post('/', async (req, res, next) => {
       });
     }
 
-    const { inning, type, runnerName, pitcherId, fielderPos, fromBase, toBase, note } = req.body;
+    const { inning, type, runnerId, runnerName, pitcherId, fielderPos, fromBase, toBase, note } = req.body;
 
     if (!inning || !type) {
       return res.status(400).json({
@@ -66,6 +66,7 @@ router.post('/', async (req, res, next) => {
       id: nextEventId(game.inningEvents),
       inning: Number(inning),
       type: String(type),
+      runnerId: runnerId ? String(runnerId) : null,
       runnerName: runnerName ? String(runnerName) : '',
       pitcherId: pitcherId ? String(pitcherId) : null,
       fielderPos: fielderPos != null ? Number(fielderPos) : null,
@@ -102,7 +103,7 @@ router.put('/:eventId', async (req, res, next) => {
       });
     }
 
-    const { inning, type, runnerName, pitcherId, fielderPos, fromBase, toBase, note } = req.body;
+    const { inning, type, runnerId, runnerName, pitcherId, fielderPos, fromBase, toBase, note } = req.body;
 
     if (type !== undefined && !VALID_TYPES.includes(type)) {
       return res.status(400).json({
@@ -113,6 +114,7 @@ router.put('/:eventId', async (req, res, next) => {
 
     if (inning !== undefined) ev.inning = Number(inning);
     if (type !== undefined) ev.type = String(type);
+    if (runnerId !== undefined) ev.runnerId = runnerId ? String(runnerId) : null;
     if (runnerName !== undefined) ev.runnerName = String(runnerName);
     if (pitcherId !== undefined) ev.pitcherId = pitcherId ? String(pitcherId) : null;
     if (fielderPos !== undefined) ev.fielderPos = fielderPos != null ? Number(fielderPos) : null;

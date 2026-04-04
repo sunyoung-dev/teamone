@@ -40,7 +40,7 @@ router.post('/', async (req, res, next) => {
       });
     }
 
-    const { pitcherId, startInning, endInning, pitchCount } = req.body;
+    const { pitcherId, startInning, endInning, pitchCount, win, loss, save, hold, earnedRuns } = req.body;
     if (!pitcherId || startInning === undefined || endInning === undefined) {
       return res.status(400).json({
         success: false,
@@ -54,6 +54,11 @@ router.post('/', async (req, res, next) => {
       startInning: Number(startInning),
       endInning: Number(endInning),
       pitchCount: pitchCount !== undefined ? Number(pitchCount) : 0,
+      win:  win  !== undefined ? Boolean(win)  : false,
+      loss: loss !== undefined ? Boolean(loss) : false,
+      save: save !== undefined ? Boolean(save) : false,
+      hold: hold !== undefined ? Boolean(hold) : false,
+      earnedRuns: earnedRuns != null ? Number(earnedRuns) : null,
     };
 
     game.pitching.push(newRecord);
@@ -83,11 +88,16 @@ router.put('/:id', async (req, res, next) => {
       });
     }
 
-    const { pitcherId, startInning, endInning, pitchCount } = req.body;
+    const { pitcherId, startInning, endInning, pitchCount, win, loss, save, hold, earnedRuns } = req.body;
     if (pitcherId !== undefined) record.pitcherId = String(pitcherId);
     if (startInning !== undefined) record.startInning = Number(startInning);
     if (endInning !== undefined) record.endInning = Number(endInning);
     if (pitchCount !== undefined) record.pitchCount = Number(pitchCount);
+    if (win !== undefined) record.win = Boolean(win);
+    if (loss !== undefined) record.loss = Boolean(loss);
+    if (save !== undefined) record.save = Boolean(save);
+    if (hold !== undefined) record.hold = Boolean(hold);
+    if (earnedRuns !== undefined) record.earnedRuns = earnedRuns != null ? Number(earnedRuns) : null;
 
     await game.save();
     res.json({ success: true, data: record });

@@ -46,6 +46,7 @@ const inningEventSchema = new mongoose.Schema({
   id: String,
   inning: Number,
   type: { type: String, required: true }, // 'SB'|'CS'|'WP'|'PB'|'BK'|'E'|'OB'|'DI'|'PK'
+  runnerId:    { type: String, default: null }, // 주자 선수 ID (통계 집계용)
   runnerName:  { type: String, default: '' },  // 관련 주자 이름
   pitcherId:   { type: String, default: null }, // 관련 투수 ID (WP/BK/PB)
   fielderPos:  { type: Number, default: null }, // 관련 수비 포지션 번호 (E)
@@ -76,6 +77,12 @@ const pitchingSchema = new mongoose.Schema({
   startInning: Number,
   endInning: Number,
   pitchCount: { type: Number, default: 0 },
+  // 투수 결과 기록
+  win:        { type: Boolean, default: false }, // 승
+  loss:       { type: Boolean, default: false }, // 패
+  save:       { type: Boolean, default: false }, // 세이브
+  hold:       { type: Boolean, default: false }, // 홀드
+  earnedRuns: { type: Number, default: null },   // 자책점 (null=미기록)
 }, { _id: false });
 
 const substitutionSchema = new mongoose.Schema({

@@ -20,27 +20,37 @@ function round3(n) {
 
 /**
  * Calculate batting statistics from an array of at-bat records.
- * @param {Array<{result: string, run?: number, rbi?: number}>} atBats
- * @returns {object} Full batting stat object
+ * Covers: AVG, G, PA, AB, R, H, 2B, 3B, HR, TB, RBI, SAC(SH), SF
+ * @param {Array} atBats
+ * @returns {object}
  */
 function calculateStats(atBats) {
-  const pa = atBats.length;
-  const bb = count(atBats, 'BB');
+  const pa  = atBats.length;
+  const bb  = countIn(atBats, ['BB', 'IBB']);
+  const ibb = count(atBats, 'IBB');
   const hbp = count(atBats, 'HBP');
-  const sf = count(atBats, 'SF');
-  const sh = count(atBats, 'SH');
-  const ab = pa - bb - hbp - sf - sh;
-  const h = countIn(atBats, HITS);
-  const singles = count(atBats, '1H');
-  const doubles = count(atBats, '2H');
-  const triples = count(atBats, '3H');
-  const homeRuns = count(atBats, 'HR');
+  const sf  = count(atBats, 'SF');
+  const sh  = count(atBats, 'SH');
+  const ci  = count(atBats, 'CI');
+  // CI, IBB는 타수에서 제외
+  const ab  = pa - bb - hbp - sf - sh - ci;
+
+  const h          = countIn(atBats, HITS);
+  const singles    = count(atBats, '1H');
+  const doubles    = count(atBats, '2H');
+  const triples    = count(atBats, '3H');
+  const homeRuns   = count(atBats, 'HR');
   const strikeouts = count(atBats, 'SO');
   const groundOuts = count(atBats, 'GO');
-  const flyOuts = count(atBats, 'FO');
+  const flyOuts    = count(atBats, 'FO');
   const doublePlays = count(atBats, 'DP');
-  const errors = count(atBats, 'E');
-  const tb = sumTotalBases(atBats);
+  const errors     = count(atBats, 'E');
+  const fieldersChoice = count(atBats, 'FC');
+  const tb         = sumTotalBases(atBats);
+
+  // 득점/타점은 atBat 레코드의 run/rbi 필드 합산
+  const runs = atBats.reduce((sum, ab) => sum + (ab.run || 0), 0);
+  const rbi  = atBats.reduce((sum, ab) => sum + (ab.rbi || 0), 0);
 
   const avg = ab > 0 ? round3(h / ab) : 0;
   const obpDenom = ab + bb + hbp + sf;
@@ -56,11 +66,16 @@ function calculateStats(atBats) {
     doubles,
     triples,
     homeRuns,
+    runs,
+    rbi,
     walks: bb,
+    intentionalWalks: ibb,
     hitByPitch: hbp,
     strikeouts,
     sacrificeFlies: sf,
     sacrificeBunts: sh,
+    catchersInterference: ci,
+    fieldersChoice,
     groundOuts,
     flyOuts,
     doublePlays,

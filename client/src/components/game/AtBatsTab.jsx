@@ -11,9 +11,9 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import { addAtBat, deleteAtBat } from '../../api.js';
-import AtBatPicker from '../AtBatPicker.jsx';
+import EnhancedAtBatModal from '../scorecard/EnhancedAtBatModal.jsx';
 import RunnerEventDialog, { BASE_LABELS } from './RunnerEventDialog.jsx';
-import { RESULT_CODES, RESULT_TYPE_COLORS } from '../../utils/constants.js';
+import { RESULT_CODES, RESULT_TYPE_COLORS, HIT_TYPES } from '../../utils/constants.js';
 import { getEffectiveLineup } from '../../utils/lineup.js';
 
 function ResultBadge({ result }) {
@@ -136,6 +136,26 @@ function AtBatRow({ atBat, player, onDelete, onRunnerEdit }) {
             <Typography variant="caption" color="text.secondary" component="span">
               {info?.label ?? atBat.result}{atBat.note ? ` · ${atBat.note}` : ''}{atBat.rbi > 0 ? ` · 타점 ${atBat.rbi}` : ''}
             </Typography>
+            {/* 기록원 확장 정보 */}
+            {(atBat.hitType || atBat.hitDirection || (atBat.fielders?.length > 0)) && (
+              <Box component="span" sx={{ display: 'flex', gap: 0.4, flexWrap: 'wrap', mt: 0.25 }}>
+                {atBat.hitType && (
+                  <Typography component="span" variant="caption" sx={{ bgcolor: '#f1f5f9', px: 0.5, borderRadius: 0.5, fontSize: '0.6rem', color: '#475569', fontWeight: 700 }}>
+                    {HIT_TYPES.find(h => h.code === atBat.hitType)?.code ?? atBat.hitType}
+                  </Typography>
+                )}
+                {atBat.hitDirection && (
+                  <Typography component="span" variant="caption" sx={{ bgcolor: '#f1f5f9', px: 0.5, borderRadius: 0.5, fontSize: '0.6rem', color: '#475569', fontWeight: 700 }}>
+                    {atBat.hitDirection}
+                  </Typography>
+                )}
+                {atBat.fielders?.length > 0 && (
+                  <Typography component="span" variant="caption" sx={{ bgcolor: '#e0f2fe', px: 0.5, borderRadius: 0.5, fontSize: '0.6rem', color: '#0369a1', fontWeight: 700, fontFamily: '"Roboto Mono", monospace' }}>
+                    {atBat.fielders.join('-')}
+                  </Typography>
+                )}
+              </Box>
+            )}
             <BallCountBadge
               balls={atBat.balls} strikes={atBat.strikes}
               fouls={atBat.fouls} pitches={atBat.pitches}
@@ -183,9 +203,15 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
     setPickerOpen(true);
   };
 
-  const handlePickerConfirm = async ({ result, inning, note, balls, strikes, fouls, pitches }) => {
+  const handlePickerConfirm = async ({ result, inning, note, balls, strikes, fouls, pitches, hitType, hitDirection, fielders, isEarnedRun }) => {
     const nextOrder = (atBats.filter((ab) => ab.inning === inning).length) + 1;
-    const newAtBat = { inning, playerId: selectedPlayerId, result, order: nextOrder, rbi: 0, run: 0, note: note || '', balls: balls ?? null, strikes: strikes ?? null, fouls: fouls ?? 0, pitches: pitches ?? null };
+    const newAtBat = {
+      inning, playerId: selectedPlayerId, result, order: nextOrder,
+      rbi: 0, run: 0, note: note || '',
+      balls: balls ?? null, strikes: strikes ?? null, fouls: fouls ?? 0, pitches: pitches ?? null,
+      hitType: hitType || null, hitDirection: hitDirection || null,
+      fielders: fielders || [], isEarnedRun: isEarnedRun ?? null,
+    };
     try {
       const res = await addAtBat(gameId, newAtBat);
       onAtBatAdded(res.data || { ...newAtBat, id: Date.now().toString() });
@@ -321,13 +347,14 @@ export default function AtBatsTab({ gameId, game, players, atBats, substitutions
         </List>
       )}
 
-      <AtBatPicker
+      <EnhancedAtBatModal
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         onConfirm={handlePickerConfirm}
         playerName={playerMap[selectedPlayerId]?.name}
         inning={selectedInning}
         maxInning={maxInning}
+        initialInning={selectedInning}
       />
 
       <RunnerEventDialog
